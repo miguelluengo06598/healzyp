@@ -9,24 +9,24 @@ type Category = {
 
 const categoriesData: Category[] = [
   {
-    title: "T-shirts",
-    slug: "/shop?category=t-shirts",
+    title: "Digestión",
+    slug: "/shop?category=digestion",
   },
   {
-    title: "Shorts",
-    slug: "/shop?category=shorts",
+    title: "Energía",
+    slug: "/shop?category=energia",
   },
   {
-    title: "Shirts",
-    slug: "/shop?category=shirts",
+    title: "Control de peso",
+    slug: "/shop?category=peso",
   },
   {
-    title: "Hoodie",
-    slug: "/shop?category=hoodie",
+    title: "Detox",
+    slug: "/shop?category=detox",
   },
   {
-    title: "Jeans",
-    slug: "/shop?category=jeans",
+    title: "Pack ahorro",
+    slug: "/shop?category=packs",
   },
 ];
 

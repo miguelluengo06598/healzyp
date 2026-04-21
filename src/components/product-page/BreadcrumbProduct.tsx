@@ -15,13 +15,13 @@ const BreadcrumbProduct = ({ title }: { title: string }) => {
       <BreadcrumbList>
         <BreadcrumbItem>
           <BreadcrumbLink asChild>
-            <Link href="/">Home</Link>
+            <Link href="/">Inicio</Link>
           </BreadcrumbLink>
         </BreadcrumbItem>
         <BreadcrumbSeparator />
         <BreadcrumbItem>
           <BreadcrumbLink asChild>
-            <Link href="/shop">Shop</Link>
+            <Link href="/shop">Tienda</Link>
           </BreadcrumbLink>
         </BreadcrumbItem>
         <BreadcrumbSeparator />

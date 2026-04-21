@@ -27,7 +27,7 @@ const MobileFilters = () => {
         <DrawerContent className="max-h-[90%]">
           <DrawerHeader>
             <div className="flex items-center justify-between">
-              <span className="font-bold text-black text-xl">Filters</span>
+              <span className="font-bold text-black text-xl">Filtros</span>
               <FiSliders className="text-2xl text-black/40" />
             </div>
             <DrawerTitle className="hidden">filters</DrawerTitle>

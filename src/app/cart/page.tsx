@@ -31,7 +31,7 @@ export default function CartPage() {
                 "font-bold text-[32px] md:text-[40px] text-black uppercase mb-5 md:mb-6",
               ])}
             >
-              your cart
+              Tu Carrito
             </h2>
             <div className="flex flex-col lg:flex-row space-y-5 lg:space-y-0 lg:space-x-5 items-start">
               <div className="w-full p-3.5 md:px-6 flex-col space-y-4 md:space-y-6 rounded-[20px] border border-black/10">
@@ -46,7 +46,7 @@ export default function CartPage() {
               </div>
               <div className="w-full lg:max-w-[505px] p-5 md:px-6 flex-col space-y-4 md:space-y-6 rounded-[20px] border border-black/10">
                 <h6 className="text-xl md:text-2xl font-bold text-black">
-                  Order Summary
+                  Resumen del Pedido
                 </h6>
                 <div className="flex flex-col space-y-5">
                   <div className="flex items-center justify-between">
@@ -55,7 +55,7 @@ export default function CartPage() {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="md:text-xl text-black/60">
-                      Discount (-
+                      Descuento (-
                       {Math.round(
                         ((totalPrice - adjustedTotalPrice) / totalPrice) * 100
                       )}
@@ -67,13 +67,14 @@ export default function CartPage() {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="md:text-xl text-black/60">
-                      Delivery Fee
+                      Gastos de Envío
                     </span>
-                    <span className="md:text-xl font-bold">Free</span>
+                    <span className="md:text-xl font-bold">Gratis</span>
                   </div>
                   <hr className="border-t-black/10" />
                   <div className="flex items-center justify-between">
                     <span className="md:text-xl text-black">Total</span>
+                    {/* Total mantiene el mismo label */}
                     <span className="text-xl md:text-2xl font-bold">
                       ${Math.round(adjustedTotalPrice)}
                     </span>
@@ -87,22 +88,22 @@ export default function CartPage() {
                     <InputGroup.Input
                       type="text"
                       name="code"
-                      placeholder="Add promo code"
+                      placeholder="Añadir código promocional"
                       className="bg-transparent placeholder:text-black/40"
                     />
                   </InputGroup>
                   <Button
                     type="button"
-                    className="bg-black rounded-full w-full max-w-[119px] h-[48px]"
+                    className="bg-[#487D26] rounded-full w-full max-w-[119px] h-[48px]"
                   >
-                    Apply
+                    Aplicar
                   </Button>
                 </div>
                 <Button
                   type="button"
-                  className="text-sm md:text-base font-medium bg-black rounded-full w-full py-4 h-[54px] md:h-[60px] group"
+                  className="text-sm md:text-base font-medium bg-[#487D26] rounded-full w-full py-4 h-[54px] md:h-[60px] group"
                 >
-                  Go to Checkout{" "}
+                  Ir al Pago{" "}
                   <FaArrowRight className="text-xl ml-2 group-hover:translate-x-1 transition-all" />
                 </Button>
               </div>
@@ -111,9 +112,9 @@ export default function CartPage() {
         ) : (
           <div className="flex items-center flex-col text-gray-300 mt-32">
             <TbBasketExclamation strokeWidth={1} className="text-6xl" />
-            <span className="block mb-4">Your shopping cart is empty.</span>
-            <Button className="rounded-full w-24" asChild>
-              <Link href="/shop">Shop</Link>
+            <span className="block mb-4">Tu carrito de compras está vacío.</span>
+            <Button className="rounded-full w-24 bg-[#487D26] hover:bg-[#3a6620]" asChild>
+              <Link href="/shop">Tienda</Link>
             </Button>
           </div>
         )}

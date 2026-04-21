@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -E \"\\\\.\\(tsx?|jsx?\\)$\")",
+      "Bash(npm install *)",
+      "Bash(npx tsc *)",
+      "Bash(node *)",
+      "Bash(ls public/*.svg)",
+      "Bash(ls \"src/components/ui/slider copy.tsx\")"
+    ]
+  }
+}

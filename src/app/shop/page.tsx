@@ -10,7 +10,7 @@ import {
 import MobileFilters from "@/components/shop-page/filters/MobileFilters";
 import Filters from "@/components/shop-page/filters";
 import { FiSliders } from "react-icons/fi";
-import { newArrivalsData, relatedProductData, topSellingData } from "../page";
+import { newArrivalsData } from "@/data/products";
 import ProductCard from "@/components/common/ProductCard";
 import {
   Pagination,
@@ -39,34 +39,32 @@ export default function ShopPage() {
           <div className="flex flex-col w-full space-y-5">
             <div className="flex flex-col lg:flex-row lg:justify-between">
               <div className="flex items-center justify-between">
-                <h1 className="font-bold text-2xl md:text-[32px]">Casual</h1>
+                <h1 className="font-bold text-2xl md:text-[32px]">Todos los productos</h1>
                 <MobileFilters />
               </div>
               <div className="flex flex-col sm:items-center sm:flex-row">
+                {/* Cambio: contador actualizado al número real de productos */}
                 <span className="text-sm md:text-base text-black/60 mr-3">
-                  Showing 1-10 of 100 Products
+                  Mostrando 1-1 de 1 Producto
                 </span>
                 <div className="flex items-center">
-                  Sort by:{" "}
+                  Ordenar por:{" "}
                   <Select defaultValue="most-popular">
                     <SelectTrigger className="font-medium text-sm px-1.5 sm:text-base w-fit text-black bg-transparent shadow-none border-none">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="most-popular">Most Popular</SelectItem>
-                      <SelectItem value="low-price">Low Price</SelectItem>
-                      <SelectItem value="high-price">High Price</SelectItem>
+                      <SelectItem value="most-popular">Más Popular</SelectItem>
+                      <SelectItem value="low-price">Precio más bajo</SelectItem>
+                      <SelectItem value="high-price">Precio más alto</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
             </div>
+            {/* Cambio: se reemplazó la combinación de tres arrays con el único producto */}
             <div className="w-full grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5">
-              {[
-                ...relatedProductData.slice(1, 4),
-                ...newArrivalsData.slice(1, 4),
-                ...topSellingData.slice(1, 4),
-              ].map((product) => (
+              {newArrivalsData.map((product) => (
                 <ProductCard key={product.id} data={product} />
               ))}
             </div>

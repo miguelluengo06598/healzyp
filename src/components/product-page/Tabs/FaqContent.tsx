@@ -13,34 +13,34 @@ type FaqItem = {
 
 const faqsData: FaqItem[] = [
   {
-    question: "What is the material of the t-shirt?",
+    question: "¿De qué están hechas las gominolas?",
     answer:
-      "Provide details about the fabric type (e.g., cotton, polyester, blend), weight, and any specific features.",
+      "Nuestras gominolas están elaboradas con vinagre de manzana orgánico certificado, pectina de manzana, zumo de frutas naturales y sin colorantes ni conservantes artificiales. Son aptas para veganos y sin gluten.",
   },
   {
-    question: "What are the care instructions for the t-shirt?",
+    question: "¿Cuántas gominolas debo tomar al día?",
     answer:
-      "Outline recommended washing, drying, and ironing methods to maintain quality and longevity.",
+      "La dosis recomendada es de 2 gominolas al día, preferiblemente por la mañana antes del desayuno. No superes la dosis diaria recomendada.",
   },
   {
-    question: "What is the design or print on the t-shirt made of?",
+    question: "¿Tienen azúcar las gominolas?",
     answer:
-      "Explain the material used for the design (e.g., vinyl, screen print, embroidery) and its durability.",
+      "No contienen azúcar añadido. Están endulzadas de forma natural con eritritol y stevia, lo que las hace aptas para personas que controlan su ingesta de azúcar.",
   },
   {
-    question: "Is the t-shirt unisex or designed for specific genders?",
+    question: "¿Cuánto tiempo tarda en verse resultados?",
     answer:
-      "Indicate whether the shirt is suitable for both men and women or targeted towards a particular gender.",
+      "Los resultados varían según cada persona. La mayoría de nuestros clientes notan mejoras en la digestión en las primeras 2-3 semanas de uso continuado. Para resultados óptimos, se recomienda un consumo mínimo de 4 semanas.",
   },
   {
-    question: "What are the shipping options and costs?",
+    question: "¿Cuáles son los plazos y costes de envío?",
     answer:
-      "Provide information about shipping methods, estimated delivery times, and associated fees.",
+      "El envío es gratuito en pedidos superiores a 30€. Los pedidos se entregan en 3-5 días hábiles en la Península. Para Canarias, Baleares y Portugal, el plazo puede ser de 5-7 días hábiles.",
   },
   {
-    question: "What is the return policy for the t-shirt?",
+    question: "¿Cuál es la política de devoluciones?",
     answer:
-      "Outline the return window, conditions, and refund or exchange procedures.",
+      "Aceptamos devoluciones en los 30 días siguientes a la recepción del producto, siempre que esté sin abrir y en su embalaje original. Contacta con nuestro servicio de atención al cliente para iniciar el proceso.",
   },
 ];
 
@@ -48,7 +48,7 @@ const FaqContent = () => {
   return (
     <section>
       <h3 className="text-xl sm:text-2xl font-bold text-black mb-5 sm:mb-6">
-        Frequently asked questions
+        Preguntas frecuentes
       </h3>
       <Accordion type="single" collapsible>
         {faqsData.map((faq, idx) => (

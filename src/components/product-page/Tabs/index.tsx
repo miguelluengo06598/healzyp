@@ -15,15 +15,15 @@ type TabBtn = {
 const tabBtnData: TabBtn[] = [
   {
     id: 1,
-    label: "Product Details",
+    label: "Detalles del Producto",
   },
   {
     id: 2,
-    label: "Rating & Reviews",
+    label: "Valoraciones y Reseñas",
   },
   {
     id: 3,
-    label: "FAQs",
+    label: "Preguntas Frecuentes",
   },
 ];
 
@@ -40,7 +40,7 @@ const Tabs = () => {
             type="button"
             className={cn([
               active === tab.id
-                ? "border-black border-b-2 font-medium"
+                ? "border-[#487D26] border-b-2 font-medium"
                 : "border-b border-black/10 text-black/60 font-normal",
               "p-5 sm:p-6 rounded-none flex-1",
             ])}

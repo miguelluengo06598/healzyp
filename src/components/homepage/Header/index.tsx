@@ -22,7 +22,7 @@ const Header = () => {
               "text-4xl lg:text-[64px] lg:leading-[64px] mb-5 lg:mb-8",
             ])}
           >
-            FIND CLOTHES THAT MATCHES YOUR STYLE
+            DESCUBRE PRODUCTOS QUE SE ADAPTAN A TU ESTILO
           </motion.h2>
           <motion.p
             initial={{ y: "100px", opacity: 0 }}
@@ -31,9 +31,9 @@ const Header = () => {
             transition={{ delay: 0.5, duration: 0.6 }}
             className="text-black/60 text-sm lg:text-base mb-6 lg:mb-8 max-w-[545px]"
           >
-            Browse through our diverse range of meticulously crafted garments,
-            designed to bring out your individuality and cater to your sense of
-            style.
+            Explora nuestra gama de productos cuidadosamente elaborados,
+            diseñados para realzar tu bienestar y adaptarse a tu estilo de vida
+            saludable.
           </motion.p>
           <motion.div
             initial={{ y: "100px", opacity: 0 }}
@@ -43,9 +43,9 @@ const Header = () => {
           >
             <Link
               href="/shop"
-              className="w-full md:w-52 mb-5 md:mb-12 inline-block text-center bg-black hover:bg-black/80 transition-all text-white px-14 py-4 rounded-full hover:animate-pulse"
+              className="w-full md:w-52 mb-5 md:mb-12 inline-block text-center bg-[#487D26] hover:bg-[#3a6620] transition-all text-white px-14 py-4 rounded-full hover:animate-pulse"
             >
-              Shop Now
+              Comprar Ahora
             </Link>
           </motion.div>
           <motion.div
@@ -60,7 +60,7 @@ const Header = () => {
                 <AnimatedCounter from={0} to={200} />+
               </span>
               <span className="text-xs xl:text-base text-black/60 text-nowrap">
-                International Brands
+                Marcas Internacionales
               </span>
             </div>
             <Separator
@@ -72,7 +72,7 @@ const Header = () => {
                 <AnimatedCounter from={0} to={2000} />+
               </span>
               <span className="text-xs xl:text-base text-black/60 text-nowrap">
-                High-Quality Products
+                Productos de Alta Calidad
               </span>
             </div>
             <Separator
@@ -84,7 +84,7 @@ const Header = () => {
                 <AnimatedCounter from={0} to={3000} />+
               </span>
               <span className="text-xs xl:text-base text-black/60 text-nowrap">
-                Happy Customers
+                Clientes Satisfechos
               </span>
             </div>
           </motion.div>

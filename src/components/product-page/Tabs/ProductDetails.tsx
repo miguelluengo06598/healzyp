@@ -7,20 +7,20 @@ export type SpecItem = {
 
 const specsData: SpecItem[] = [
   {
-    label: " Material composition",
-    value: "100% Cotton",
+    label: "Composición",
+    value: "Vinagre de manzana orgánico, pectina de manzana, eritritol, stevia",
   },
   {
-    label: "Care instructions",
-    value: "Machine wash warm, tumble dry",
+    label: "Modo de uso",
+    value: "2 gominolas al día, preferiblemente antes del desayuno",
   },
   {
-    label: "Fit type",
-    value: "Classic Fit",
+    label: "Formato",
+    value: "60 gominolas por bote (30 días de suministro)",
   },
   {
-    label: "Pattern",
-    value: "Solid",
+    label: "Certificaciones",
+    value: "Orgánico, Vegano, Sin gluten",
   },
 ];
 

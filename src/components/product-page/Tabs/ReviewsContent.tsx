@@ -8,7 +8,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import ReviewCard from "@/components/common/ReviewCard";
-import { reviewsData } from "@/app/page";
+import { reviewsData } from "@/data/products";
+import type { Review } from "@/types/review.types";
 import Link from "next/link";
 
 const ReviewsContent = () => {
@@ -17,7 +18,7 @@ const ReviewsContent = () => {
       <div className="flex items-center justify-between flex-col sm:flex-row mb-5 sm:mb-6">
         <div className="flex items-center mb-4 sm:mb-0">
           <h3 className="text-xl sm:text-2xl font-bold text-black mr-2">
-            All Reviews
+            Todas las Reseñas
           </h3>
           <span className="text-sm sm:text-base text-black/60">(451)</span>
         </div>
@@ -27,31 +28,31 @@ const ReviewsContent = () => {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="latest">Latest</SelectItem>
-              <SelectItem value="most-relevant">Most Relevant</SelectItem>
-              <SelectItem value="oldest">Oldest</SelectItem>
+              <SelectItem value="latest">Más recientes</SelectItem>
+              <SelectItem value="most-relevant">Más relevantes</SelectItem>
+              <SelectItem value="oldest">Más antiguas</SelectItem>
             </SelectContent>
           </Select>
 
           <Button
             type="button"
-            className="sm:min-w-[166px] px-4 py-3 sm:px-5 sm:py-4 rounded-full bg-black font-medium text-xs sm:text-base h-12"
+            className="sm:min-w-[166px] px-4 py-3 sm:px-5 sm:py-4 rounded-full bg-[#487D26] font-medium text-xs sm:text-base h-12"
           >
-            Write a Review
+            Escribir una Reseña
           </Button>
         </div>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5 sm:mb-9">
-        {reviewsData.map((review) => (
+        {reviewsData.map((review: Review) => (
           <ReviewCard key={review.id} data={review} isAction isDate />
         ))}
       </div>
       <div className="w-full px-4 sm:px-0 text-center">
         <Link
           href="#"
-          className="inline-block w-[230px] px-11 py-4 border rounded-full hover:bg-black hover:text-white text-black transition-all font-medium text-sm sm:text-base border-black/10"
+          className="inline-block w-[230px] px-11 py-4 border rounded-full hover:bg-[#487D26] hover:text-white text-black transition-all font-medium text-sm sm:text-base border-black/10"
         >
-          Load More Reviews
+          Cargar más Reseñas
         </Link>
       </div>
     </section>

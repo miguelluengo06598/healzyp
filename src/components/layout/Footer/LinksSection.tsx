@@ -6,104 +6,109 @@ import { cn } from "@/lib/utils";
 const footerLinksData: FooterLinks[] = [
   {
     id: 1,
-    title: "company",
+    title: "empresa",
     children: [
       {
         id: 11,
-        label: "about",
+        label: "sobre nosotros",
         url: "#",
       },
       {
         id: 12,
-        label: "features",
+        label: "características",
         url: "#",
       },
       {
         id: 13,
-        label: "works",
+        label: "cómo funciona",
         url: "#",
       },
       {
         id: 14,
-        label: "career",
+        label: "empleo",
         url: "#",
       },
     ],
   },
   {
     id: 2,
-    title: "help",
+    title: "ayuda",
     children: [
       {
         id: 21,
-        label: "customer support",
+        label: "atención al cliente",
         url: "#",
       },
       {
         id: 22,
-        label: "delivery details",
+        label: "detalles de envío",
         url: "#",
       },
       {
         id: 23,
-        label: "terms & conditions",
-        url: "#",
+        label: "términos y condiciones",
+        url: "/terms",
       },
       {
         id: 24,
-        label: "privacy policy",
-        url: "#",
+        label: "política de privacidad",
+        url: "/privacy",
+      },
+      {
+        id: 25,
+        label: "aviso legal",
+        url: "/aviso-legal",
       },
     ],
   },
   {
     id: 3,
-    title: "faq",
+    title: "preguntas frecuentes",
     children: [
       {
         id: 31,
-        label: "account",
+        label: "mi cuenta",
         url: "#",
       },
       {
         id: 32,
-        label: "manage deliveries",
+        label: "gestionar pedidos",
         url: "#",
       },
       {
         id: 33,
-        label: "orders",
+        label: "pedidos",
         url: "#",
       },
       {
         id: 34,
-        label: "payments",
+        label: "pagos",
         url: "#",
       },
     ],
   },
   {
     id: 4,
-    title: "resources",
+    title: "recursos",
     children: [
       {
         id: 41,
-        label: "Free eBooks",
+        label: "eBooks gratuitos",
         url: "#",
       },
       {
         id: 42,
-        label: "development tutorial",
+        label: "tutorial de salud",
         url: "#",
       },
       {
         id: 43,
-        label: "How to - Blog",
+        label: "Blog de consejos",
         url: "#",
       },
       {
         id: 44,
-        label: "youtube playlist",
+        label: "lista de reproducción",
         url: "#",
       },
     ],

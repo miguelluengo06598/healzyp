@@ -17,54 +17,54 @@ import CartBtn from "./CartBtn";
 const data: NavMenu = [
   {
     id: 1,
-    label: "Shop",
+    label: "Tienda",
     type: "MenuList",
     children: [
       {
         id: 11,
-        label: "Men's clothes",
-        url: "/shop#men-clothes",
-        description: "In attractive and spectacular colors and designs",
+        label: "Suplementos digestivos",
+        url: "/shop#digestivos",
+        description: "Cuida tu salud intestinal de forma natural y deliciosa",
       },
       {
         id: 12,
-        label: "Women's clothes",
-        url: "/shop#women-clothes",
-        description: "Ladies, your style and tastes are important to us",
+        label: "Energía y vitalidad",
+        url: "/shop#energia",
+        description: "Productos para mantener tu energía durante todo el día",
       },
       {
         id: 13,
-        label: "Kids clothes",
-        url: "/shop#kids-clothes",
-        description: "For all ages, with happy and beautiful colors",
+        label: "Control de peso",
+        url: "/shop#peso",
+        description: "Apoya tu metabolismo con ingredientes 100% naturales",
       },
       {
         id: 14,
-        label: "Bags and Shoes",
-        url: "/shop#bag-shoes",
-        description: "Suitable for men, women and all tastes and styles",
+        label: "Pack ahorro",
+        url: "/shop#packs",
+        description: "Los mejores precios comprando en pack",
       },
     ],
   },
   {
     id: 2,
     type: "MenuItem",
-    label: "On Sale",
-    url: "/shop#on-sale",
+    label: "En Oferta",
+    url: "/shop#en-oferta",
     children: [],
   },
   {
     id: 3,
     type: "MenuItem",
-    label: "New Arrivals",
-    url: "/shop#new-arrivals",
+    label: "Novedades",
+    url: "/shop#novedades",
     children: [],
   },
   {
     id: 4,
     type: "MenuItem",
-    label: "Brands",
-    url: "/shop#brands",
+    label: "Marcas",
+    url: "/shop#marcas",
     children: [],
   },
 ];
@@ -115,7 +115,7 @@ const TopNavbar = () => {
           <InputGroup.Input
             type="search"
             name="search"
-            placeholder="Search for products..."
+            placeholder="Buscar productos..."
             className="bg-transparent placeholder:text-black/40"
           />
         </InputGroup>

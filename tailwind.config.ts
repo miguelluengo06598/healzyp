@@ -33,6 +33,9 @@ const config: Config = {
         sm: "calc(var(--radius) - 4px)",
       },
       colors: {
+        // Color principal de la marca
+        brand: "#487D26",
+        "brand-hover": "#3a6620",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         card: {

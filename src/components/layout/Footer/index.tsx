@@ -25,11 +25,7 @@ const socialsData: SocialNetworks[] = [
     icon: <FaInstagram />,
     url: "https://instagram.com",
   },
-  {
-    id: 4,
-    icon: <FaGithub />,
-    url: "https://github.com/mohammadoftadeh",
-  },
+
 ];
 
 const paymentBadgesData: PaymentBadge[] = [
@@ -77,15 +73,15 @@ const Footer = () => {
                 SHOP.CO
               </h1>
               <p className="text-black/60 text-sm mb-9">
-                We have clothes that suits your style and which you’re proud to
-                wear. From women to men.
+                Tenemos productos que se adaptan a tu estilo de vida saludable
+                y de los que te sentirás orgulloso.
               </p>
               <div className="flex items-center">
                 {socialsData.map((social) => (
                   <Link
                     href={social.url}
                     key={social.id}
-                    className="bg-white hover:bg-black hover:text-white transition-all mr-3 w-7 h-7 rounded-full border border-black/20 flex items-center justify-center p-1.5"
+                    className="bg-white hover:bg-[#487D26] hover:text-white transition-all mr-3 w-7 h-7 rounded-full border border-black/20 flex items-center justify-center p-1.5"
                   >
                     {social.icon}
                   </Link>
@@ -103,21 +99,7 @@ const Footer = () => {
           <hr className="h-[1px] border-t-black/10 mb-6" />
           <div className="flex flex-col sm:flex-row justify-center sm:justify-between items-center mb-2">
             <p className="text-sm text-center sm:text-left text-black/60 mb-4 sm:mb-0 sm:mr-1">
-              Shop.co © Made by{" "}
-              <Link
-                href="https://github.com/mohammadoftadeh"
-                className="text-black font-medium"
-              >
-                Mohammad Oftadeh
-              </Link>
-              {", "}
-              Designed by{" "}
-              <Link
-                href="https://www.figma.com/@hamzauix"
-                className="text-black font-medium"
-              >
-                Hamza Naeem
-              </Link>
+              Nombre Tienda{" "}&copy; {new Date().getFullYear()}. Todos los derechos reservados.
             </p>
             <div className="flex items-center">
               {paymentBadgesData.map((badge, _, arr) => (
