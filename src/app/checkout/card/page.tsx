@@ -651,7 +651,7 @@ export default function CardCheckoutPage() {
   // options — those are only required by PaymentElement.
   const stripeOptions = {
     appearance: {
-      theme: "none" as const,
+      theme: "flat" as const,
       variables: {
         fontFamily: "inherit",
         fontSizeBase: "14px",

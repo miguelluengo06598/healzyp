@@ -9,8 +9,8 @@ import type { Review } from "@/types/review.types";
 const gominolasProduct: Product = {
   id: 1,
   title: "Gominolas de vinagre de manzana",
-  srcUrl: "/images/pic1.png",
-  gallery: ["/images/pic1.png", "/images/pic10.png", "/images/pic11.png"],
+  srcUrl: "/images/FL1.png",
+  gallery: ["/images/FL1.png", "/images/FL2.png", "/images/FL3.png","/images/FL4.png"],
   // Precio real del pack de 1 bote (sin descuento artificial)
   price: 29,
   discount: { amount: 0, percentage: 0 },

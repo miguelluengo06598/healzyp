@@ -78,7 +78,7 @@ export default function OrderSummary({
       <div className="flex items-center gap-4">
         <div className="relative w-[72px] h-[72px] shrink-0 rounded-[13px] overflow-hidden bg-[#F0EEED]">
           <Image
-            src="/images/pic1.png"
+            src="/images/FOTOPRODUCT1.png"
             alt="Gominolas de vinagre de manzana"
             fill
             className="object-cover"
