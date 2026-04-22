@@ -8,6 +8,8 @@ import { integralCF } from "@/styles/fonts";
 import OrderSummary, {
   Bundle,
   getStoredBundle,
+  CARD_DISCOUNT_CENTS,
+  formatPrice,
 } from "@/components/checkout/OrderSummary";
 import SecurityBadges from "@/components/checkout/SecurityBadges";
 import { stripePromise } from "@/lib/stripe";
@@ -82,7 +84,7 @@ const inputCls = (error?: string, success?: boolean) =>
 
 // ─── Inner form (needs Stripe context) ───────────────────────────────────────
 
-function CheckoutForm({ bundle }: { bundle: Bundle }) {
+function CheckoutForm({ bundle, totalCents }: { bundle: Bundle; totalCents: number }) {
   const stripe = useStripe();
   const elements = useElements();
   const router = useRouter();
@@ -409,6 +411,26 @@ function CheckoutForm({ bundle }: { bundle: Bundle }) {
           Datos de pago
         </h3>
 
+        {/* Accepted payment methods */}
+        <div className="flex flex-wrap items-center gap-2 mb-4">
+          {["VISA", "Mastercard", "Amex", "Apple Pay", "Google Pay"].map((m) => (
+            <span
+              key={m}
+              className="text-[11px] font-semibold text-black/50 border border-black/15 rounded-[6px] px-2 py-0.5 bg-white"
+            >
+              {m}
+            </span>
+          ))}
+        </div>
+
+        {/* Card discount banner */}
+        <div className="bg-[#F0F4EC] border border-[#487D26]/25 rounded-[12px] px-4 py-3 mb-4 flex items-center gap-2.5">
+          <FaCheckCircle className="text-[#487D26] text-base shrink-0" />
+          <p className="text-sm text-[#487D26] font-medium">
+            ¡Descuento de {formatPrice(CARD_DISCOUNT_CENTS)} aplicado por pagar con tarjeta!
+          </p>
+        </div>
+
         <div className="border border-black/10 rounded-[16px] p-4">
           <PaymentElement
             options={{
@@ -443,7 +465,7 @@ function CheckoutForm({ bundle }: { bundle: Bundle }) {
         )}
       >
         <FaLock className="text-sm" />
-        {submitting ? "Procesando pago…" : `Pagar ${bundle.price}`}
+        {submitting ? "Procesando pago…" : `Pagar ${formatPrice(totalCents)}`}
       </button>
 
       <SecurityBadges className="mt-6" />
@@ -463,9 +485,11 @@ export default function CardCheckoutPage() {
 
   if (!bundle) return null; // avoid SSR mismatch
 
+  const totalCents = bundle.priceInCents - CARD_DISCOUNT_CENTS;
+
   const stripeOptions = {
     mode: "payment" as const,
-    amount: bundle.priceInCents,
+    amount: totalCents,
     currency: "eur",
     appearance: {
       theme: "stripe" as const,
@@ -512,13 +536,13 @@ export default function CardCheckoutPage() {
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-8 items-start">
           {/* Mobile: summary at top */}
           <div className="lg:hidden">
-            <OrderSummary bundle={bundle} />
+            <OrderSummary bundle={bundle} discountInCents={CARD_DISCOUNT_CENTS} />
           </div>
 
           {/* Form wrapped in Stripe Elements */}
           {stripePromise ? (
             <Elements stripe={stripePromise} options={stripeOptions}>
-              <CheckoutForm bundle={bundle} />
+              <CheckoutForm bundle={bundle} totalCents={totalCents} />
             </Elements>
           ) : (
             <div className="bg-yellow-50 border border-yellow-200 rounded-[16px] p-5 text-sm text-yellow-800">
@@ -530,7 +554,7 @@ export default function CardCheckoutPage() {
 
           {/* Desktop: sticky summary */}
           <div className="hidden lg:block sticky top-8">
-            <OrderSummary bundle={bundle} />
+            <OrderSummary bundle={bundle} discountInCents={CARD_DISCOUNT_CENTS} />
           </div>
         </div>
       </div>

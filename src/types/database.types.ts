@@ -130,6 +130,16 @@ export type OrderItemInsert = Omit<OrderItemRow, 'id' | 'created_at'>
 
 export type ReviewInsert = Omit<ReviewRow, 'id' | 'created_at' | 'updated_at'>
 
+export interface ContactMessageRow {
+  id: number
+  name: string
+  email: string
+  message: string
+  created_at: string
+}
+
+export type ContactMessageInsert = Omit<ContactMessageRow, 'id' | 'created_at'>
+
 // ─── Tipo genérico de la base de datos (compatible con createClient<Database>) ──
 
 // Supabase v2 requiere el campo `Relationships` en cada tabla
@@ -167,6 +177,11 @@ export interface Database {
         Row: ReviewRow
         Insert: ReviewInsert
         Update: Partial<ReviewInsert>
+      } & NoRelationships
+      contact_messages: {
+        Row: ContactMessageRow
+        Insert: ContactMessageInsert
+        Update: Partial<ContactMessageInsert>
       } & NoRelationships
     }
     Views: Record<string, never>
