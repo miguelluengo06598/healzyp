@@ -33,9 +33,28 @@ export const BUNDLES: Bundle[] = [
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-/** Format euro cents to a localised price string, e.g. 2499 → "24,99€" */
+/**
+ * Format euro cents to a localised price string.
+ * e.g. 2499 → "24,99€"
+ *
+ * Safety guarantees:
+ *  - Coerces input to a finite number (NaN / undefined → 0)
+ *  - Rounds to the nearest cent before dividing (avoids float drift)
+ *  - Clamps to ≥ 0 (no negative prices displayed)
+ */
 export function formatPrice(cents: number): string {
-  return (cents / 100).toFixed(2).replace(".", ",") + "€";
+  const safe = Math.max(0, Math.round(Number(cents) || 0));
+  return (safe / 100).toFixed(2).replace(".", ",") + "\u20AC"; // U+20AC = €
+}
+
+/**
+ * Parse a European-format price string back to a float (euros, not cents).
+ * e.g. "24,99€" → 24.99
+ * Returns 0 for any unrecognisable input.
+ */
+export function parsePrice(formatted: string): number {
+  const n = parseFloat(String(formatted).replace(/[^\d,.-]/g, "").replace(",", "."));
+  return isFinite(n) ? n : 0;
 }
 
 export function getStoredBundle(): Bundle {
@@ -70,7 +89,7 @@ export default function OrderSummary({
   discountInCents = 0,
 }: OrderSummaryProps) {
   const hasDiscount = discountInCents > 0;
-  const totalCents = bundle.priceInCents - discountInCents;
+  const totalCents = Math.max(0, Math.round(bundle.priceInCents) - Math.round(discountInCents));
 
   return (
     <aside className="bg-[#F7F8F5] rounded-[20px] p-5 md:p-6 flex flex-col gap-5">
@@ -78,7 +97,7 @@ export default function OrderSummary({
       <div className="flex items-center gap-4">
         <div className="relative w-[72px] h-[72px] shrink-0 rounded-[13px] overflow-hidden bg-[#F0EEED]">
           <Image
-            src="/images/FOTOPRODUCT1.png"
+            src="/images/FOTOVINDEMANPORT.png"
             alt="Gominolas de vinagre de manzana"
             fill
             className="object-cover"
@@ -123,7 +142,9 @@ export default function OrderSummary({
 
       <div className="flex justify-between items-center">
         <span className="font-bold text-base">Total</span>
-        <span className={cn(integralCF.className, "text-xl text-[#487D26]")}>
+        {/* Price uses Satoshi (body font) — integralCF lacks the € glyph (U+20AC)
+            and the browser's metric-mismatched fallback caused the "??.99€" bug. */}
+        <span className="text-xl font-bold text-[#487D26]">
           {formatPrice(totalCents)}
         </span>
       </div>

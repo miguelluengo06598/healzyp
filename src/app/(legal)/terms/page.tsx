@@ -2,16 +2,16 @@ import type { Metadata } from "next";
 import LegalPage from "@/components/legal/LegalPage";
 
 export const metadata: Metadata = {
-  title: "Términos y Condiciones | SHOP.CO",
+  title: "Términos y Condiciones | HEALZYP",
   description:
-    "Condiciones generales de contratación aplicables a todas las compras realizadas en SHOP.CO.",
+    "Condiciones generales de contratación aplicables a todas las compras realizadas en HEALZYP.",
 };
 
 export default function TermsPage() {
   return (
     <LegalPage
       title="Términos y Condiciones"
-      subtitle="Condiciones generales de contratación que regulan la compra de productos en SHOP.CO. Al realizar un pedido, aceptas estas condiciones en su totalidad."
+      subtitle="Condiciones generales de contratación que regulan la compra de productos en HEALZYP. Al realizar un pedido, aceptas estas condiciones en su totalidad."
       lastUpdated="22 de abril de 2026"
       breadcrumb={[{ label: "Términos y Condiciones", href: "/terms" }]}
       sections={[

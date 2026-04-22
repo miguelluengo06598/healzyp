@@ -645,7 +645,7 @@ export default function CardCheckoutPage() {
 
   if (!bundle) return null;
 
-  const totalCents = bundle.priceInCents - CARD_DISCOUNT_CENTS;
+  const totalCents = Math.max(0, Math.round(bundle.priceInCents) - Math.round(CARD_DISCOUNT_CENTS));
 
   // Individual card elements don't use the deferred-intent mode/amount/currency
   // options — those are only required by PaymentElement.
@@ -675,7 +675,7 @@ export default function CardCheckoutPage() {
             ← Volver
           </button>
           <h1 className={cn(integralCF.className, "text-xl md:text-2xl")}>
-            SHOP.CO
+            HEALZYP
           </h1>
           {/* Security signal — desktop only */}
           <p className="hidden sm:flex items-center gap-1.5 text-xs text-black/40">

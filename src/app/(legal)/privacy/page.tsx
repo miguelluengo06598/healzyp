@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import LegalPage from "@/components/legal/LegalPage";
 
 export const metadata: Metadata = {
-  title: "Política de Privacidad | SHOP.CO",
+  title: "Política de Privacidad | HEALZYP",
   description:
     "Información sobre el tratamiento de tus datos personales conforme al RGPD y la LOPDGDD.",
 };

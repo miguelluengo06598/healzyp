@@ -70,7 +70,7 @@ const Footer = () => {
                   "text-[28px] lg:text-[32px] mb-6",
                 ])}
               >
-                SHOP.CO
+                HEALZYP
               </h1>
               <p className="text-black/60 text-sm mb-9">
                 Tenemos productos que se adaptan a tu estilo de vida saludable

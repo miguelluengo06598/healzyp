@@ -177,7 +177,7 @@ export default function CodCheckoutPage() {
             ← Volver
           </button>
           <h1 className={cn(integralCF.className, "text-xl md:text-2xl")}>
-            SHOP.CO
+            HEALZYP
           </h1>
           <SecurityBadges className="hidden sm:flex" />
         </div>

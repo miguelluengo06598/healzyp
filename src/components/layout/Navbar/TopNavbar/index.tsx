@@ -59,7 +59,7 @@ const TopNavbar = () => {
               "text-2xl lg:text-[32px] mb-2",
             ])}
           >
-            SHOP.CO
+            HEALZYP
           </Link>
         </div>
 
