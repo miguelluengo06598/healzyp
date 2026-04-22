@@ -11,15 +11,17 @@ import OrderSummary, {
   CARD_DISCOUNT_CENTS,
   formatPrice,
 } from "@/components/checkout/OrderSummary";
-import SecurityBadges from "@/components/checkout/SecurityBadges";
 import { stripePromise } from "@/lib/stripe";
-import { FaCheckCircle, FaLock } from "react-icons/fa";
+import { FaCheck, FaCheckCircle, FaLock } from "react-icons/fa";
 import { FaCircleXmark } from "react-icons/fa6";
+import PaymentIcons from "@/components/common/PaymentIcons";
 
 // Stripe imports — loaded client-side only
 import {
   Elements,
-  PaymentElement,
+  CardNumberElement,
+  CardExpiryElement,
+  CardCvcElement,
   useStripe,
   useElements,
 } from "@stripe/react-stripe-js";
@@ -35,15 +37,44 @@ type FormValues = {
   city: string;
   province: string;
   postcode: string;
-  // honeypot
-  _hp: string;
+  _hp: string; // honeypot
 };
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+type CardField = "number" | "expiry" | "cvc";
+
+// ─── Constants ────────────────────────────────────────────────────────────────
 
 const PHONE_RE = /^(\+34|0034|34)?[6789]\d{8}$/;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+/** Text styles injected into each Stripe card iframe. */
+const STRIPE_STYLE = {
+  base: {
+    fontSize: "14px",
+    fontFamily: "inherit",
+    fontWeight: "400",
+    color: "#111111",
+    "::placeholder": { color: "#9CA3AF" },
+  },
+  invalid: { color: "#ef4444" },
+};
+
+// ─── Shared UI helpers ────────────────────────────────────────────────────────
+
+/**
+ * Step number bubble — matches the site's black/white palette.
+ */
+function StepBubble({ n }: { n: number }) {
+  return (
+    <div className="w-5 h-5 rounded-full bg-black text-white text-[10px] font-bold flex items-center justify-center shrink-0">
+      {n}
+    </div>
+  );
+}
+
+/**
+ * Standard field wrapper reused across the entire form.
+ */
 function InputWrapper({
   label,
   error,
@@ -72,6 +103,29 @@ function InputWrapper({
   );
 }
 
+/**
+ * Simplified wrapper for Stripe card elements — labels + error text only,
+ * no icon overlay (the Stripe iframe fills the whole input area).
+ */
+function CardFieldWrapper({
+  label,
+  error,
+  children,
+}: {
+  label: string;
+  error?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-1">
+      <label className="text-sm font-medium text-black/70">{label}</label>
+      {children}
+      {error && <p className="text-xs text-red-500">{error}</p>}
+    </div>
+  );
+}
+
+/** Standard text input class — same across every field on the page. */
 const inputCls = (error?: string, success?: boolean) =>
   cn(
     "w-full rounded-full px-5 py-3 border text-sm outline-none transition-all pr-10",
@@ -82,9 +136,32 @@ const inputCls = (error?: string, success?: boolean) =>
       : "border-black/20 focus:border-[#487D26] focus:ring-1 focus:ring-[#487D26]/30"
   );
 
+/**
+ * Wrapper div for a Stripe card element.
+ * Identical visuals to inputCls but driven by explicit props because
+ * focus state comes from Stripe's onFocus/onBlur callbacks, not :focus.
+ */
+const cardWrapCls = (error?: string, focused?: boolean, success?: boolean) =>
+  cn(
+    "w-full rounded-full px-5 py-3 border text-sm transition-all cursor-text",
+    error
+      ? "border-red-400 ring-1 ring-red-400/30"
+      : focused
+      ? "border-[#487D26] ring-1 ring-[#487D26]/30"
+      : success
+      ? "border-[#487D26]"
+      : "border-black/20"
+  );
+
 // ─── Inner form (needs Stripe context) ───────────────────────────────────────
 
-function CheckoutForm({ bundle, totalCents }: { bundle: Bundle; totalCents: number }) {
+function CheckoutForm({
+  bundle,
+  totalCents,
+}: {
+  bundle: Bundle;
+  totalCents: number;
+}) {
   const stripe = useStripe();
   const elements = useElements();
   const router = useRouter();
@@ -92,6 +169,15 @@ function CheckoutForm({ bundle, totalCents }: { bundle: Bundle; totalCents: numb
   const [submitting, setSubmitting] = useState(false);
   const [stripeError, setStripeError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
+
+  // Per-field Stripe state
+  const [cardErrors, setCardErrors] = useState<
+    Partial<Record<CardField, string>>
+  >({});
+  const [cardComplete, setCardComplete] = useState<
+    Record<CardField, boolean>
+  >({ number: false, expiry: false, cvc: false });
+  const [cardFocus, setCardFocus] = useState<CardField | null>(null);
 
   const {
     register,
@@ -123,30 +209,35 @@ function CheckoutForm({ bundle, totalCents }: { bundle: Bundle; totalCents: numb
       return;
     }
 
-    setSubmitting(true);
-    setStripeError(null);
-
-    // Submit the PaymentElement (collects card details)
-    const { error: submitError } = await elements.submit();
-    if (submitError) {
-      setStripeError(submitError.message ?? "Error al procesar el pago.");
-      setSubmitting(false);
+    if (!cardComplete.number || !cardComplete.expiry || !cardComplete.cvc) {
+      setStripeError("Por favor, completa todos los datos de la tarjeta.");
       return;
     }
 
-    // TODO: call your backend to create a PaymentIntent and get clientSecret
+    setSubmitting(true);
+    setStripeError(null);
+
+    // TODO: create PaymentMethod + PaymentIntent and confirm payment
+    // const cardElement = elements.getElement(CardNumberElement)!;
+    // const { paymentMethod, error: pmError } = await stripe.createPaymentMethod({
+    //   type: "card",
+    //   card: cardElement,
+    //   billing_details: {
+    //     name: `${data.firstName} ${data.lastName}`,
+    //     email: data.email,
+    //     phone: data.phone,
+    //     address: { line1: data.address, city: data.city, state: data.province, postal_code: data.postcode, country: "ES" },
+    //   },
+    // });
+    // if (pmError) { setStripeError(pmError.message ?? "Error."); setSubmitting(false); return; }
+    //
     // const res = await fetch("/api/create-payment-intent", {
     //   method: "POST",
-    //   body: JSON.stringify({ bundleId: bundle.id }),
+    //   body: JSON.stringify({ bundleId: bundle.id, paymentMethodId: paymentMethod.id }),
     // });
     // const { clientSecret } = await res.json();
-
-    // TODO: confirm payment with Stripe
-    // const { error: confirmError } = await stripe.confirmPayment({
-    //   elements,
-    //   clientSecret,
-    //   confirmParams: { return_url: `${window.location.origin}/checkout/success` },
-    // });
+    //
+    // const { error: confirmError } = await stripe.confirmCardPayment(clientSecret);
     // if (confirmError) { setStripeError(confirmError.message); setSubmitting(false); return; }
 
     // ── Demo: simulate successful payment ──
@@ -155,9 +246,10 @@ function CheckoutForm({ bundle, totalCents }: { bundle: Bundle; totalCents: numb
     setSubmitted(true);
   };
 
+  // ── Success screen ──────────────────────────────────────────────────────────
   if (submitted) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-center">
+      <div className="flex flex-col items-center justify-center py-20 text-center px-6">
         <FaCheckCircle className="text-[#487D26] text-6xl mb-6" />
         <h2 className={cn(integralCF.className, "text-3xl md:text-4xl mb-4")}>
           ¡Pago completado!
@@ -176,8 +268,9 @@ function CheckoutForm({ bundle, totalCents }: { bundle: Bundle; totalCents: numb
     );
   }
 
+  // ── Form ────────────────────────────────────────────────────────────────────
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate>
+    <form onSubmit={handleSubmit(onSubmit)} noValidate className="p-6 md:p-8">
       {/* Honeypot */}
       <input
         type="text"
@@ -187,16 +280,18 @@ function CheckoutForm({ bundle, totalCents }: { bundle: Bundle; totalCents: numb
         {...register("_hp")}
       />
 
-      {/* Personal info */}
-      <section className="mb-8">
-        <h3 className="font-bold text-base mb-4">Datos personales</h3>
+      {/* ── 01 · Datos personales ─────────────────────────────────────────────── */}
+      <section>
+        <div className="flex items-center gap-3 mb-5">
+          <StepBubble n={1} />
+          <h3 className="font-bold text-base">Datos personales</h3>
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <InputWrapper
-            label="Nombre *"
+            label="Nombre"
             error={errors.firstName?.message}
-            success={
-              touchedFields.firstName && !errors.firstName && !!watched.firstName
-            }
+            success={!!touchedFields.firstName && !errors.firstName && !!watched.firstName}
           >
             <input
               type="text"
@@ -204,7 +299,7 @@ function CheckoutForm({ bundle, totalCents }: { bundle: Bundle; totalCents: numb
               placeholder="María"
               className={inputCls(
                 errors.firstName?.message,
-                touchedFields.firstName && !errors.firstName && !!watched.firstName
+                !!touchedFields.firstName && !errors.firstName && !!watched.firstName
               )}
               {...register("firstName", {
                 required: "El nombre es obligatorio",
@@ -214,11 +309,9 @@ function CheckoutForm({ bundle, totalCents }: { bundle: Bundle; totalCents: numb
           </InputWrapper>
 
           <InputWrapper
-            label="Apellidos *"
+            label="Apellidos"
             error={errors.lastName?.message}
-            success={
-              touchedFields.lastName && !errors.lastName && !!watched.lastName
-            }
+            success={!!touchedFields.lastName && !errors.lastName && !!watched.lastName}
           >
             <input
               type="text"
@@ -226,7 +319,7 @@ function CheckoutForm({ bundle, totalCents }: { bundle: Bundle; totalCents: numb
               placeholder="García López"
               className={inputCls(
                 errors.lastName?.message,
-                touchedFields.lastName && !errors.lastName && !!watched.lastName
+                !!touchedFields.lastName && !errors.lastName && !!watched.lastName
               )}
               {...register("lastName", {
                 required: "Los apellidos son obligatorios",
@@ -236,9 +329,9 @@ function CheckoutForm({ bundle, totalCents }: { bundle: Bundle; totalCents: numb
           </InputWrapper>
 
           <InputWrapper
-            label="Correo electrónico *"
+            label="Correo electrónico"
             error={errors.email?.message}
-            success={touchedFields.email && !errors.email && !!watched.email}
+            success={!!touchedFields.email && !errors.email && !!watched.email}
           >
             <input
               type="email"
@@ -246,7 +339,7 @@ function CheckoutForm({ bundle, totalCents }: { bundle: Bundle; totalCents: numb
               placeholder="maria@ejemplo.com"
               className={inputCls(
                 errors.email?.message,
-                touchedFields.email && !errors.email && !!watched.email
+                !!touchedFields.email && !errors.email && !!watched.email
               )}
               {...register("email", {
                 required: "El email es obligatorio",
@@ -256,9 +349,9 @@ function CheckoutForm({ bundle, totalCents }: { bundle: Bundle; totalCents: numb
           </InputWrapper>
 
           <InputWrapper
-            label="Teléfono *"
+            label="Teléfono"
             error={errors.phone?.message}
-            success={touchedFields.phone && !errors.phone && !!watched.phone}
+            success={!!touchedFields.phone && !errors.phone && !!watched.phone}
           >
             <input
               type="tel"
@@ -266,7 +359,7 @@ function CheckoutForm({ bundle, totalCents }: { bundle: Bundle; totalCents: numb
               placeholder="612 345 678"
               className={inputCls(
                 errors.phone?.message,
-                touchedFields.phone && !errors.phone && !!watched.phone
+                !!touchedFields.phone && !errors.phone && !!watched.phone
               )}
               {...register("phone", {
                 required: "El teléfono es obligatorio",
@@ -280,16 +373,20 @@ function CheckoutForm({ bundle, totalCents }: { bundle: Bundle; totalCents: numb
         </div>
       </section>
 
-      {/* Shipping address */}
-      <section className="mb-8">
-        <h3 className="font-bold text-base mb-4">Dirección de envío</h3>
+      <hr className="border-t-black/10 my-7" />
+
+      {/* ── 02 · Dirección de envío ───────────────────────────────────────────── */}
+      <section>
+        <div className="flex items-center gap-3 mb-5">
+          <StepBubble n={2} />
+          <h3 className="font-bold text-base">Dirección de envío</h3>
+        </div>
+
         <div className="flex flex-col gap-4">
           <InputWrapper
-            label="Dirección *"
+            label="Dirección"
             error={errors.address?.message}
-            success={
-              touchedFields.address && !errors.address && !!watched.address
-            }
+            success={!!touchedFields.address && !errors.address && !!watched.address}
           >
             {AddressAutofill && mapboxToken ? (
               <AddressAutofill
@@ -298,16 +395,10 @@ function CheckoutForm({ bundle, totalCents }: { bundle: Bundle; totalCents: numb
                 onRetrieve={(res: any) => {
                   const f = res.features?.[0]?.properties;
                   if (!f) return;
-                  if (f.address_line1)
-                    setValue("address", f.address_line1, {
-                      shouldValidate: true,
-                    });
-                  if (f.place)
-                    setValue("city", f.place, { shouldValidate: true });
-                  if (f.postcode)
-                    setValue("postcode", f.postcode, { shouldValidate: true });
-                  if (f.region)
-                    setValue("province", f.region, { shouldValidate: true });
+                  if (f.address_line1) setValue("address", f.address_line1, { shouldValidate: true });
+                  if (f.place) setValue("city", f.place, { shouldValidate: true });
+                  if (f.postcode) setValue("postcode", f.postcode, { shouldValidate: true });
+                  if (f.region) setValue("province", f.region, { shouldValidate: true });
                 }}
               >
                 <input
@@ -316,7 +407,7 @@ function CheckoutForm({ bundle, totalCents }: { bundle: Bundle; totalCents: numb
                   placeholder="Calle Mayor 12, 3º B"
                   className={inputCls(
                     errors.address?.message,
-                    touchedFields.address && !errors.address && !!watched.address
+                    !!touchedFields.address && !errors.address && !!watched.address
                   )}
                   {...register("address", {
                     required: "La dirección es obligatoria",
@@ -331,7 +422,7 @@ function CheckoutForm({ bundle, totalCents }: { bundle: Bundle; totalCents: numb
                 placeholder="Calle Mayor 12, 3º B"
                 className={inputCls(
                   errors.address?.message,
-                  touchedFields.address && !errors.address && !!watched.address
+                  !!touchedFields.address && !errors.address && !!watched.address
                 )}
                 {...register("address", {
                   required: "La dirección es obligatoria",
@@ -343,11 +434,9 @@ function CheckoutForm({ bundle, totalCents }: { bundle: Bundle; totalCents: numb
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             <InputWrapper
-              label="Código postal *"
+              label="Código postal"
               error={errors.postcode?.message}
-              success={
-                touchedFields.postcode && !errors.postcode && !!watched.postcode
-              }
+              success={!!touchedFields.postcode && !errors.postcode && !!watched.postcode}
             >
               <input
                 type="text"
@@ -356,7 +445,7 @@ function CheckoutForm({ bundle, totalCents }: { bundle: Bundle; totalCents: numb
                 maxLength={5}
                 className={inputCls(
                   errors.postcode?.message,
-                  touchedFields.postcode && !errors.postcode && !!watched.postcode
+                  !!touchedFields.postcode && !errors.postcode && !!watched.postcode
                 )}
                 {...register("postcode", {
                   required: "Obligatorio",
@@ -366,9 +455,9 @@ function CheckoutForm({ bundle, totalCents }: { bundle: Bundle; totalCents: numb
             </InputWrapper>
 
             <InputWrapper
-              label="Ciudad *"
+              label="Ciudad"
               error={errors.city?.message}
-              success={touchedFields.city && !errors.city && !!watched.city}
+              success={!!touchedFields.city && !errors.city && !!watched.city}
             >
               <input
                 type="text"
@@ -376,18 +465,16 @@ function CheckoutForm({ bundle, totalCents }: { bundle: Bundle; totalCents: numb
                 placeholder="Madrid"
                 className={inputCls(
                   errors.city?.message,
-                  touchedFields.city && !errors.city && !!watched.city
+                  !!touchedFields.city && !errors.city && !!watched.city
                 )}
                 {...register("city", { required: "Obligatorio" })}
               />
             </InputWrapper>
 
             <InputWrapper
-              label="Provincia *"
+              label="Provincia"
               error={errors.province?.message}
-              success={
-                touchedFields.province && !errors.province && !!watched.province
-              }
+              success={!!touchedFields.province && !errors.province && !!watched.province}
             >
               <input
                 type="text"
@@ -395,7 +482,7 @@ function CheckoutForm({ bundle, totalCents }: { bundle: Bundle; totalCents: numb
                 placeholder="Madrid"
                 className={inputCls(
                   errors.province?.message,
-                  touchedFields.province && !errors.province && !!watched.province
+                  !!touchedFields.province && !errors.province && !!watched.province
                 )}
                 {...register("province", { required: "Obligatorio" })}
               />
@@ -404,71 +491,144 @@ function CheckoutForm({ bundle, totalCents }: { bundle: Bundle; totalCents: numb
         </div>
       </section>
 
-      {/* Stripe PaymentElement */}
-      <section className="mb-8">
-        <h3 className="font-bold text-base mb-4 flex items-center gap-2">
-          <FaLock className="text-[#487D26] text-sm" />
-          Datos de pago
-        </h3>
+      <hr className="border-t-black/10 my-7" />
 
-        {/* Accepted payment methods */}
-        <div className="flex flex-wrap items-center gap-2 mb-4">
-          {["VISA", "Mastercard", "Amex", "Apple Pay", "Google Pay"].map((m) => (
-            <span
-              key={m}
-              className="text-[11px] font-semibold text-black/50 border border-black/15 rounded-[6px] px-2 py-0.5 bg-white"
+      {/* ── 03 · Datos de pago ────────────────────────────────────────────────── */}
+      <section>
+        {/* Section header: step + title + card logos */}
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-3">
+            <StepBubble n={3} />
+            <h3 className="font-bold text-base">Datos de pago</h3>
+          </div>
+          <div className="flex items-center gap-1.5">
+            {["VISA", "MC", "AMEX"].map((m) => (
+              <span
+                key={m}
+                className="text-[9px] font-bold tracking-wide text-black/35 border border-black/10 rounded-[4px] px-1.5 py-[3px] bg-white leading-none"
+              >
+                {m}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* Trust + discount — single muted line */}
+        <p className="text-xs text-black/40 mb-5 flex items-center gap-3 flex-wrap">
+          <span className="flex items-center gap-1">
+            <FaLock className="text-[9px]" />
+            Pago seguro con cifrado SSL
+          </span>
+          <span className="text-[#487D26] font-medium flex items-center gap-1">
+            <FaCheck className="text-[9px]" />
+            Ahorra {formatPrice(CARD_DISCOUNT_CENTS)} con tarjeta
+          </span>
+        </p>
+
+        {/* Card fields — identical visual style to all other inputs */}
+        <div className="flex flex-col gap-4">
+          <CardFieldWrapper label="Número de tarjeta" error={cardErrors.number}>
+            <div
+              className={cardWrapCls(
+                cardErrors.number,
+                cardFocus === "number",
+                cardComplete.number && !cardErrors.number
+              )}
             >
-              {m}
-            </span>
-          ))}
-        </div>
+              <CardNumberElement
+                options={{ style: STRIPE_STYLE, showIcon: true }}
+                onFocus={() => setCardFocus("number")}
+                onBlur={() => setCardFocus(null)}
+                onChange={(e) => {
+                  setCardErrors((p) => ({ ...p, number: e.error?.message }));
+                  setCardComplete((p) => ({ ...p, number: e.complete }));
+                }}
+              />
+            </div>
+          </CardFieldWrapper>
 
-        {/* Card discount banner */}
-        <div className="bg-[#F0F4EC] border border-[#487D26]/25 rounded-[12px] px-4 py-3 mb-4 flex items-center gap-2.5">
-          <FaCheckCircle className="text-[#487D26] text-base shrink-0" />
-          <p className="text-sm text-[#487D26] font-medium">
-            ¡Descuento de {formatPrice(CARD_DISCOUNT_CENTS)} aplicado por pagar con tarjeta!
-          </p>
-        </div>
+          <div className="grid grid-cols-2 gap-4">
+            <CardFieldWrapper label="Fecha de expiración" error={cardErrors.expiry}>
+              <div
+                className={cardWrapCls(
+                  cardErrors.expiry,
+                  cardFocus === "expiry",
+                  cardComplete.expiry && !cardErrors.expiry
+                )}
+              >
+                <CardExpiryElement
+                  options={{ style: STRIPE_STYLE }}
+                  onFocus={() => setCardFocus("expiry")}
+                  onBlur={() => setCardFocus(null)}
+                  onChange={(e) => {
+                    setCardErrors((p) => ({ ...p, expiry: e.error?.message }));
+                    setCardComplete((p) => ({ ...p, expiry: e.complete }));
+                  }}
+                />
+              </div>
+            </CardFieldWrapper>
 
-        <div className="border border-black/10 rounded-[16px] p-4">
-          <PaymentElement
-            options={{
-              layout: "tabs",
-              fields: { billingDetails: { address: "never" } },
-            }}
-          />
+            <CardFieldWrapper label="CVC" error={cardErrors.cvc}>
+              <div
+                className={cardWrapCls(
+                  cardErrors.cvc,
+                  cardFocus === "cvc",
+                  cardComplete.cvc && !cardErrors.cvc
+                )}
+              >
+                <CardCvcElement
+                  options={{ style: STRIPE_STYLE }}
+                  onFocus={() => setCardFocus("cvc")}
+                  onBlur={() => setCardFocus(null)}
+                  onChange={(e) => {
+                    setCardErrors((p) => ({ ...p, cvc: e.error?.message }));
+                    setCardComplete((p) => ({ ...p, cvc: e.complete }));
+                  }}
+                />
+              </div>
+            </CardFieldWrapper>
+          </div>
         </div>
 
         {stripeError && (
-          <p className="text-xs text-red-500 mt-2">{stripeError}</p>
+          <p className="text-xs text-red-500 mt-3">{stripeError}</p>
         )}
-
-        {/* PCI badge */}
-        <div className="flex items-center gap-2 mt-3 text-xs text-black/40">
-          <FaLock className="text-xs" />
-          <span>
-            Pago seguro procesado por Stripe. Cumple con PCI DSS nivel 1.
-          </span>
-        </div>
       </section>
 
-      {/* Submit */}
-      <button
-        type="submit"
-        disabled={submitting || !stripe}
-        className={cn(
-          "w-full rounded-full h-[52px] text-base font-bold text-white transition-all flex items-center justify-center gap-2",
-          submitting || !stripe
-            ? "bg-[#487D26]/60 cursor-not-allowed"
-            : "bg-[#487D26] hover:bg-[#3a6620]"
-        )}
-      >
-        <FaLock className="text-sm" />
-        {submitting ? "Procesando pago…" : `Pagar ${formatPrice(totalCents)}`}
-      </button>
+      <hr className="border-t-black/10 my-7" />
 
-      <SecurityBadges className="mt-6" />
+      {/* ── Submit ────────────────────────────────────────────────────────────── */}
+      <div className="flex flex-col gap-4">
+        <button
+          type="submit"
+          disabled={submitting || !stripe}
+          className={cn(
+            "w-full rounded-full h-[52px] text-base font-bold text-white transition-all flex items-center justify-center gap-2",
+            submitting || !stripe
+              ? "bg-[#487D26]/60 cursor-not-allowed"
+              : "bg-[#487D26] hover:bg-[#3a6620]"
+          )}
+        >
+          <FaLock className="text-sm" />
+          {submitting
+            ? "Procesando pago…"
+            : `Pagar ${formatPrice(totalCents)}`}
+        </button>
+
+        {/* Payment logos */}
+        <PaymentIcons />
+
+        {/* Compact trust strip */}
+        <p className="text-[11px] text-black/35 text-center flex items-center justify-center gap-2 flex-wrap">
+          <span>🔒 Pago seguro</span>
+          <span className="text-black/20">·</span>
+          <span>🚚 Envío gratis</span>
+          <span className="text-black/20">·</span>
+          <span>↩️ 30 días devolución</span>
+          <span className="text-black/20">·</span>
+          <span>PCI DSS nivel 1</span>
+        </p>
+      </div>
     </form>
   );
 }
@@ -483,28 +643,30 @@ export default function CardCheckoutPage() {
     setBundle(getStoredBundle());
   }, []);
 
-  if (!bundle) return null; // avoid SSR mismatch
+  if (!bundle) return null;
 
   const totalCents = bundle.priceInCents - CARD_DISCOUNT_CENTS;
 
+  // Individual card elements don't use the deferred-intent mode/amount/currency
+  // options — those are only required by PaymentElement.
   const stripeOptions = {
-    mode: "payment" as const,
-    amount: totalCents,
-    currency: "eur",
     appearance: {
-      theme: "stripe" as const,
+      theme: "none" as const,
       variables: {
-        colorPrimary: "#487D26",
-        borderRadius: "9999px",
         fontFamily: "inherit",
+        fontSizeBase: "14px",
+        colorText: "#111111",
+        colorTextPlaceholder: "#9CA3AF",
+        colorDanger: "#ef4444",
       },
     },
   };
 
   return (
-    <main className="min-h-screen bg-white">
-      {/* Header */}
-      <header className="border-b border-black/10 px-4 py-4">
+    <main className="min-h-screen bg-[#F7F8F5]">
+
+      {/* ── Minimal header ────────────────────────────────────────────────────── */}
+      <header className="bg-white border-b border-black/10 px-4 py-4">
         <div className="max-w-frame mx-auto flex items-center justify-between">
           <button
             onClick={() => router.back()}
@@ -515,47 +677,43 @@ export default function CardCheckoutPage() {
           <h1 className={cn(integralCF.className, "text-xl md:text-2xl")}>
             SHOP.CO
           </h1>
-          <SecurityBadges className="hidden sm:flex" />
+          {/* Security signal — desktop only */}
+          <p className="hidden sm:flex items-center gap-1.5 text-xs text-black/40">
+            <FaLock className="text-[10px] text-[#487D26]" />
+            Pago seguro · SSL
+          </p>
         </div>
       </header>
 
+      {/* ── Content ───────────────────────────────────────────────────────────── */}
       <div className="max-w-frame mx-auto px-4 xl:px-0 py-8 md:py-12">
-        <h2
-          className={cn(
-            integralCF.className,
-            "text-[28px] md:text-[36px] mb-2"
-          )}
-        >
-          Pago con Tarjeta
-        </h2>
-        <p className="text-black/60 text-sm mb-8 flex items-center gap-1.5">
-          <FaLock className="text-[#487D26] text-xs" />
-          Conexión segura · Cifrado SSL · Stripe
-        </p>
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-6 items-start">
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-8 items-start">
-          {/* Mobile: summary at top */}
+          {/* Mobile: order summary at top */}
           <div className="lg:hidden">
             <OrderSummary bundle={bundle} discountInCents={CARD_DISCOUNT_CENTS} />
           </div>
 
-          {/* Form wrapped in Stripe Elements */}
+          {/* ── Form card ───────────────────────────────────────────────────── */}
           {stripePromise ? (
-            <Elements stripe={stripePromise} options={stripeOptions}>
-              <CheckoutForm bundle={bundle} totalCents={totalCents} />
-            </Elements>
+            <div className="bg-white rounded-[24px] shadow-sm overflow-hidden">
+              <Elements stripe={stripePromise} options={stripeOptions}>
+                <CheckoutForm bundle={bundle} totalCents={totalCents} />
+              </Elements>
+            </div>
           ) : (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-[16px] p-5 text-sm text-yellow-800">
+            <div className="bg-white rounded-[24px] p-6 text-sm text-yellow-800 border border-yellow-200">
               <strong>Configuración pendiente:</strong> añade{" "}
               <code>NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY</code> a tu{" "}
               <code>.env.local</code> para activar el pago con tarjeta.
             </div>
           )}
 
-          {/* Desktop: sticky summary */}
+          {/* Desktop: sticky order summary */}
           <div className="hidden lg:block sticky top-8">
             <OrderSummary bundle={bundle} discountInCents={CARD_DISCOUNT_CENTS} />
           </div>
+
         </div>
       </div>
     </main>

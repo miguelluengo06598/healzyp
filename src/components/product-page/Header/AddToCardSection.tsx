@@ -5,6 +5,7 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { Product } from "@/types/product.types";
+import PaymentIcons from "@/components/common/PaymentIcons";
 
 // La prop data se mantiene para no romper la firma que usa Header/index.tsx
 const AddToCardSection = ({ data: _data }: { data: Product }) => {
@@ -31,6 +32,8 @@ const AddToCardSection = ({ data: _data }: { data: Product }) => {
           5€ dto.
         </span>
       </button>
+
+      <PaymentIcons className="pt-1" />
     </div>
   );
 };
