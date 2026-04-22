@@ -22,7 +22,7 @@ const Header = () => {
               "text-4xl lg:text-[64px] lg:leading-[64px] mb-5 lg:mb-8",
             ])}
           >
-            DESCUBRE PRODUCTOS QUE SE ADAPTAN A TU ESTILO
+            BIENESTAR REAL PARA TU DÍA A DÍA
           </motion.h2>
           <motion.p
             initial={{ y: "100px", opacity: 0 }}
@@ -31,9 +31,8 @@ const Header = () => {
             transition={{ delay: 0.5, duration: 0.6 }}
             className="text-black/60 text-sm lg:text-base mb-6 lg:mb-8 max-w-[545px]"
           >
-            Explora nuestra gama de productos cuidadosamente elaborados,
-            diseñados para realzar tu bienestar y adaptarse a tu estilo de vida
-            saludable.
+            Suplementos naturales diseñados para mejorar tu bienestar sin
+            complicaciones. Calidad, eficacia y comodidad en cada toma.
           </motion.p>
           <motion.div
             initial={{ y: "100px", opacity: 0 }}
@@ -57,10 +56,10 @@ const Header = () => {
           >
             <div className="flex flex-col">
               <span className="font-bold text-2xl md:text-xl lg:text-3xl xl:text-[40px] xl:mb-2">
-                <AnimatedCounter from={0} to={200} />+
+                <AnimatedCounter from={0} to={100} />%
               </span>
               <span className="text-xs xl:text-base text-black/60 text-nowrap">
-                Marcas Internacionales
+                Ingredientes Naturales
               </span>
             </div>
             <Separator
@@ -72,7 +71,7 @@ const Header = () => {
                 <AnimatedCounter from={0} to={2000} />+
               </span>
               <span className="text-xs xl:text-base text-black/60 text-nowrap">
-                Productos de Alta Calidad
+                Clientes Satisfechos
               </span>
             </div>
             <Separator
@@ -81,10 +80,10 @@ const Header = () => {
             />
             <div className="flex flex-col w-full text-center sm:w-auto sm:text-left mt-3 sm:mt-0 sm:ml-6 md:ml-0">
               <span className="font-bold text-2xl md:text-xl lg:text-3xl xl:text-[40px] xl:mb-2">
-                <AnimatedCounter from={0} to={3000} />+
+                <AnimatedCounter from={0} to={30} />
               </span>
               <span className="text-xs xl:text-base text-black/60 text-nowrap">
-                Clientes Satisfechos
+                Días de devolución garantizada
               </span>
             </div>
           </motion.div>

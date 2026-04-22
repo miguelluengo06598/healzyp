@@ -2,13 +2,18 @@ import type { Product } from "@/types/product.types";
 import type { Review } from "@/types/review.types";
 
 // TODO: reemplaza srcUrl y gallery con las imágenes reales del producto.
+// NOTE: El precio aquí refleja el precio de entrada del pack de 1 bote.
+// TODO: conectar con la tabla `products` de Supabase para carga dinámica de precios.
+//       No se hace ahora porque requeriría una query async que podría romper el flujo
+//       del carrito (Redux) si el esquema de Supabase cambia.
 const gominolasProduct: Product = {
   id: 1,
   title: "Gominolas de vinagre de manzana",
   srcUrl: "/images/pic1.png",
   gallery: ["/images/pic1.png", "/images/pic10.png", "/images/pic11.png"],
-  price: 14,
-  discount: { amount: 0, percentage: 10 },
+  // Precio real del pack de 1 bote (sin descuento artificial)
+  price: 29,
+  discount: { amount: 0, percentage: 0 },
   rating: 4.8,
 };
 

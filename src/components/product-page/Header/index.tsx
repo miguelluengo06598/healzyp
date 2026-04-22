@@ -4,9 +4,19 @@ import { Product } from "@/types/product.types";
 import { integralCF } from "@/styles/fonts";
 import { cn } from "@/lib/utils";
 import Rating from "@/components/ui/Rating";
+import { FaCheck } from "react-icons/fa";
 // Cambio: ColorSelection y SizeSelection reemplazados por BundleSelection
 import BundleSelection from "./BundleSelection";
 import AddToCardSection from "./AddToCardSection";
+
+const BENEFIT_BUBBLES = [
+  "Con vinagre de manzana",
+  "100% veganas",
+  "Sin azúcares añadidos",
+  "Favorece la digestión",
+  "Apoya el bienestar",
+  "Sabor delicioso",
+];
 
 const Header = ({ data }: { data: Product }) => {
   return (
@@ -38,13 +48,18 @@ const Header = ({ data }: { data: Product }) => {
               <span className="text-black/60">/5</span>
             </span>
           </div>
-          {/* Precio eliminado: los precios reales se muestran en BundleSelection */}
-          {/* Cambio: descripción actualizada para el nuevo producto */}
-          <p className="text-sm sm:text-base text-black/60 mb-5">
-            Gominolas naturales de vinagre de manzana. Una forma deliciosa y
-            cómoda de incorporar el vinagre de manzana a tu rutina diaria.
-            Aptas para veganos.
-          </p>
+          {/* Benefit bubbles — replace description paragraph */}
+          <div className="flex flex-wrap gap-2 mb-5">
+            {BENEFIT_BUBBLES.map((benefit) => (
+              <span
+                key={benefit}
+                className="inline-flex items-center gap-1.5 rounded-full bg-[#F0F4EC] border border-[#487D26]/25 text-black/75 text-xs sm:text-sm font-medium px-3.5 py-1.5"
+              >
+                <FaCheck className="text-[#487D26] text-[10px] shrink-0" />
+                {benefit}
+              </span>
+            ))}
+          </div>
           <hr className="h-[1px] border-t-black/10 mb-5" />
           {/* Cambio: sección de bundles en lugar de color + talla */}
           <BundleSelection />

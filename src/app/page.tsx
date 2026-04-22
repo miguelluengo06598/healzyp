@@ -1,13 +1,8 @@
 import ProductListSec from "@/components/common/ProductListSec";
 import Brands from "@/components/homepage/Brands";
-import DressStyle from "@/components/homepage/DressStyle";
 import Header from "@/components/homepage/Header";
-import Reviews from "@/components/homepage/Reviews";
-import {
-  newArrivalsData,
-  topSellingData,
-  reviewsData,
-} from "@/data/products";
+import HealzypBrand from "@/components/homepage/HealzypBrand";
+import { newArrivalsData, topSellingData } from "@/data/products";
 
 export default function Home() {
   return (
@@ -31,9 +26,8 @@ export default function Home() {
           />
         </div>
         <div className="mb-[50px] sm:mb-20">
-          <DressStyle />
+          <HealzypBrand />
         </div>
-        <Reviews data={reviewsData} />
       </main>
     </>
   );

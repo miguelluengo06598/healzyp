@@ -4,7 +4,11 @@ import { cn } from "@/lib/utils";
 import React, { useState } from "react";
 
 // ─── Datos de los bundles ────────────────────────────────────────────────────
-// TODO: edita id, name, price y popular según tus paquetes reales
+// Estos precios coinciden con la tabla `bundles` de Supabase (validado en createOrder).
+// TODO: para carga 100% dinámica, pasar los bundles como props desde un Server Component
+//       padre que los obtenga con: supabase.from('bundles').select('*').eq('active', true)
+//       No se hace aquí porque este componente es "use client" y no puede hacer fetch async
+//       sin añadir un servidor intermedio, lo que aumenta la complejidad y el riesgo de rotura.
 const bundles = [
   { id: 1, name: "1 Bote",  price: "29,99€", popular: false },
   { id: 2, name: "2 Botes", price: "44,99€", popular: true  },
