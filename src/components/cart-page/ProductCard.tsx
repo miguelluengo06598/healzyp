@@ -31,7 +31,8 @@ const ProductCard = ({ data }: ProductCardProps) => {
           src={data.srcUrl}
           width={124}
           height={124}
-          className="rounded-md w-full h-full object-cover hover:scale-110 transition-all duration-500"
+          style={{ width: "100%", height: "100%" }}
+          className="rounded-md object-cover hover:scale-110 transition-all duration-500"
           alt={data.name}
           priority
         />

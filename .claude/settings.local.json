@@ -8,7 +8,8 @@
       "Bash(ls public/*.svg)",
       "Bash(ls \"src/components/ui/slider copy.tsx\")",
       "Bash(npm audit *)",
-      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); [print\\(k,v['severity']\\) for k,v in d.get\\('vulnerabilities',{}\\).items\\(\\)]\")"
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); [print\\(k,v['severity']\\) for k,v in d.get\\('vulnerabilities',{}\\).items\\(\\)]\")",
+      "Bash(grep -v \"^--$\")"
     ]
   }
 }

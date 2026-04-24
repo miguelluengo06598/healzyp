@@ -24,7 +24,8 @@ export default function PaymentIcons({ className = "" }: { className?: string })
           alt={alt}
           width={w}
           height={20}
-          className="h-5 w-auto opacity-60 object-contain"
+          style={{ height: "20px", width: "auto" }}
+          className="opacity-60 object-contain"
         />
       ))}
     </div>

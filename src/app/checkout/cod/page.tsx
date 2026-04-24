@@ -19,10 +19,10 @@ import { FaCircleXmark } from "react-icons/fa6";
 
 type FormValues = {
   fullName: string;
+  email: string;
   phone: string;
   address: string;
   postcode: string;
-  // hidden — auto-filled by Mapbox, sent to backend but not shown
   city: string;
   province: string;
   // honeypot
@@ -32,6 +32,7 @@ type FormValues = {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const PHONE_RE = /^(\+34|0034|34)?[6789]\d{8}$/;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function InputWrapper({
   label,
@@ -117,7 +118,8 @@ export default function CodCheckoutPage() {
       const result = await createOrderAction({
         customerData: {
           fullName:   data.fullName,
-          phone:      data.phone,
+          phone:      data.phone.replace(/[\s\-]/g, ""),
+          email:      data.email || undefined,
           address:    data.address,
           postalCode: data.postcode,
           city:       data.city,
@@ -213,9 +215,10 @@ export default function CodCheckoutPage() {
               {...register("_hp")}
             />
 
-            {/* Hidden city + province — filled by Mapbox, sent to backend */}
+            {/* city + province — auto-rellenados por Mapbox; visibles como fallback */}
             <input type="hidden" {...register("city")} />
             <input type="hidden" {...register("province")} />
+            {/* Los campos visibles de ciudad y provincia se muestran si Mapbox no está disponible */}
 
             {/* Nombre completo */}
             <InputWrapper
@@ -240,6 +243,26 @@ export default function CodCheckoutPage() {
               />
             </InputWrapper>
 
+            {/* Email */}
+            <InputWrapper
+              label="Correo electrónico"
+              error={errors.email?.message}
+              success={touchedFields.email && !errors.email && !!watched.email}
+            >
+              <input
+                type="email"
+                autoComplete="email"
+                placeholder="maria@ejemplo.com"
+                className={inputCls(
+                  errors.email?.message,
+                  touchedFields.email && !errors.email && !!watched.email
+                )}
+                {...register("email", {
+                  pattern: { value: EMAIL_RE, message: "Email no válido" },
+                })}
+              />
+            </InputWrapper>
+
             {/* Teléfono */}
             <InputWrapper
               label="Teléfono *"
@@ -256,10 +279,9 @@ export default function CodCheckoutPage() {
                 )}
                 {...register("phone", {
                   required: "El teléfono es obligatorio",
-                  pattern: {
-                    value: PHONE_RE,
-                    message: "Introduce un teléfono español válido",
-                  },
+                  validate: (v) =>
+                    PHONE_RE.test(v.replace(/[\s\-]/g, "")) ||
+                    "Introduce un teléfono español válido",
                 })}
               />
             </InputWrapper>
@@ -347,6 +369,48 @@ export default function CodCheckoutPage() {
                     value: /^\d{5}$/,
                     message: "Debe tener 5 dígitos",
                   },
+                })}
+              />
+            </InputWrapper>
+
+            {/* Ciudad */}
+            <InputWrapper
+              label="Ciudad *"
+              error={errors.city?.message}
+              success={touchedFields.city && !errors.city && !!watched.city}
+            >
+              <input
+                type="text"
+                autoComplete="address-level2"
+                placeholder="Madrid"
+                className={inputCls(
+                  errors.city?.message,
+                  touchedFields.city && !errors.city && !!watched.city
+                )}
+                {...register("city", {
+                  required: "La ciudad es obligatoria",
+                  minLength: { value: 2, message: "Mínimo 2 caracteres" },
+                })}
+              />
+            </InputWrapper>
+
+            {/* Provincia */}
+            <InputWrapper
+              label="Provincia *"
+              error={errors.province?.message}
+              success={touchedFields.province && !errors.province && !!watched.province}
+            >
+              <input
+                type="text"
+                autoComplete="address-level1"
+                placeholder="Madrid"
+                className={inputCls(
+                  errors.province?.message,
+                  touchedFields.province && !errors.province && !!watched.province
+                )}
+                {...register("province", {
+                  required: "La provincia es obligatoria",
+                  minLength: { value: 2, message: "Mínimo 2 caracteres" },
                 })}
               />
             </InputWrapper>

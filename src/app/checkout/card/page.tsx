@@ -277,19 +277,29 @@ function CheckoutForm({
 
     // ── 4. Pago confirmado por Stripe → crear la orden en base de datos ─────
     const { createOrderAction } = await import("@/app/actions/orders");
-    await createOrderAction({
+    const orderResult = await createOrderAction({
       customerData: {
         fullName: `${data.firstName} ${data.lastName}`,
-        phone: data.phone,
+        phone: data.phone.replace(/[\s\-]/g, ""),
         address: data.address,
         postalCode: data.postcode,
         city: data.city,
         province: data.province,
+        email: data.email,
       },
       bundleId: bundle.id,
       paymentMethod: "CARD",
       stripePaymentIntentId: paymentIntent.id,
     });
+
+    if (!orderResult.success) {
+      // El pago SÍ se procesó — avisar al cliente para que contacte soporte
+      setStripeError(
+        `El pago fue procesado pero hubo un error al registrar tu pedido (${orderResult.error ?? "error desconocido"}). Guarda tu referencia de pago: ${paymentIntent.id} y contáctanos.`
+      );
+      setSubmitting(false);
+      return;
+    }
 
     setSubmitting(false);
     setSubmitted(true);
@@ -412,10 +422,9 @@ function CheckoutForm({
               )}
               {...register("phone", {
                 required: "El teléfono es obligatorio",
-                pattern: {
-                  value: PHONE_RE,
-                  message: "Teléfono español no válido",
-                },
+                validate: (v) =>
+                  PHONE_RE.test(v.replace(/[\s\-]/g, "")) ||
+                  "Teléfono español no válido",
               })}
             />
           </InputWrapper>

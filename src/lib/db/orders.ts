@@ -5,6 +5,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { createServiceClient, supabase } from '@/lib/supabase'
+import { sendTelegramNotification } from '@/lib/telegram'
 import type {
   BundleRow,
   OrderRow,
@@ -19,6 +20,7 @@ export interface CreateOrderInput {
   customerData: {
     fullName: string
     phone: string
+    email?: string
     address: string
     postalCode: string
     city: string
@@ -88,6 +90,7 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
       .from('customers')
       .update({
         full_name:   input.customerData.fullName,
+        ...(input.customerData.email ? { email: input.customerData.email } : {}),
         address:     input.customerData.address,
         postal_code: input.customerData.postalCode,
         city:        input.customerData.city,
@@ -100,7 +103,7 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
       .insert({
         full_name:   input.customerData.fullName,
         phone:       input.customerData.phone,
-        email:       null,
+        email:       input.customerData.email ?? null,
         address:     input.customerData.address,
         postal_code: input.customerData.postalCode,
         city:        input.customerData.city,
@@ -190,6 +193,22 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
     console.error('[createOrder] Error al insertar order_item:', itemError)
   }
 
+  // ── 6. Notificación Telegram (solo COD; CARD se notifica desde el webhook) ─
+  if (input.paymentMethod === 'COD') {
+    // Fire-and-forget — no awaited para no bloquear la respuesta al cliente
+    sendTelegramNotification('NEW_ORDER_COD', {
+      orderNumber:   orderNumber as string,
+      customerName:  input.customerData.fullName,
+      customerPhone: input.customerData.phone,
+      customerEmail: input.customerData.email,
+      address:       input.customerData.address,
+      city:          input.customerData.city,
+      province:      input.customerData.province,
+      bundleName:    bundle.name,
+      totalEuros:    Number(bundle.price),
+    }).catch((e) => console.error('[createOrder] telegram COD error:', e))
+  }
+
   return { success: true, orderNumber: orderNumber as string, orderId }
 }
 
@@ -250,6 +269,37 @@ export async function updateOrderPaymentStatus(
   }
 
   return true
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// getOrderByStripePaymentIntentId
+// Usado por el webhook para obtener datos completos del pedido antes de notificar
+// ─────────────────────────────────────────────────────────────────────────────
+
+export async function getOrderByStripePaymentIntentId(
+  stripePaymentIntentId: string
+): Promise<OrderWithItems | null> {
+  const db = createServiceClient()
+
+  const { data, error } = await db
+    .from('orders')
+    .select(`
+      *,
+      order_items (
+        id,
+        product_title,
+        bundle_name,
+        quantity,
+        unit_price,
+        subtotal
+      )
+    `)
+    .eq('stripe_payment_intent_id', stripePaymentIntentId)
+    .single()
+
+  if (error || !data) return null
+
+  return data as unknown as OrderWithItems
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

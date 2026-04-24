@@ -7,10 +7,13 @@ import type { CreateOrderResult } from '@/lib/db/orders'
 const SPANISH_PHONE = /^(\+34|0034|34)?[6789]\d{8}$/
 const POSTCODE_ES   = /^\d{5}$/
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
 const CreateOrderSchema = z.object({
   customerData: z.object({
     fullName:   z.string().min(2).max(150).trim(),
-    phone:      z.string().regex(SPANISH_PHONE, 'Teléfono español no válido'),
+    phone:      z.string().transform(v => v.replace(/[\s\-]/g, '')).refine(v => SPANISH_PHONE.test(v), 'Teléfono español no válido'),
+    email:      z.string().regex(EMAIL_RE, 'Email no válido').optional(),
     address:    z.string().min(5).max(200).trim(),
     postalCode: z.string().regex(POSTCODE_ES, 'Código postal no válido'),
     city:       z.string().min(2).max(100).trim(),

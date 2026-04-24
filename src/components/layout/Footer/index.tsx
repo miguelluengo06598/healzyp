@@ -114,9 +114,9 @@ const Footer = () => {
                     priority
                     src={badge.srcUrl}
                     width={33}
-                    height={100}
-                    alt="user"
-                    className="max-h-[15px]"
+                    height={15}
+                    style={{ height: "15px", width: "auto" }}
+                    alt="payment badge"
                   />
                 </span>
               ))}

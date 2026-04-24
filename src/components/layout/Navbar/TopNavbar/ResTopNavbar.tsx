@@ -26,10 +26,9 @@ const ResTopNavbar = ({ data }: { data: NavMenu }) => {
         <Image
           priority
           src="/icons/menu.svg"
-          height={100}
-          width={100}
+          width={22}
+          height={22}
           alt="menu"
-          className="max-w-[22px] max-h-[22px]"
         />
       </SheetTrigger>
       <SheetContent side="left" className="overflow-y-auto">

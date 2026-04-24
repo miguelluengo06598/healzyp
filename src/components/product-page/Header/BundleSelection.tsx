@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 // ─── Datos de los bundles ────────────────────────────────────────────────────
 // Estos precios coinciden con la tabla `bundles` de Supabase (validado en createOrder).
@@ -21,6 +21,13 @@ const BundleSelection = () => {
   // Bundle 2 pre-seleccionado por ser el más popular
   const [selected, setSelected] = useState<BundleId>(2);
 
+  // Sincronizar el bundle seleccionado con localStorage al montar y al cambiar.
+  // Esto garantiza que el checkout siempre muestra el mismo bundle que ve el usuario
+  // aunque no haya interactuado con los botones.
+  useEffect(() => {
+    localStorage.setItem("selectedBundle", JSON.stringify({ id: selected }));
+  }, [selected]);
+
   return (
     <div className="flex flex-col">
       {/* Etiqueta igual que "Choose Size" / "Select Colors" del diseño original */}
@@ -36,13 +43,7 @@ const BundleSelection = () => {
             <button
               key={bundle.id}
               type="button"
-              onClick={() => {
-                setSelected(bundle.id);
-                localStorage.setItem(
-                  "selectedBundle",
-                  JSON.stringify({ id: bundle.id })
-                );
-              }}
+              onClick={() => setSelected(bundle.id)}
               className={cn(
                 "flex items-center justify-between px-5 py-3.5 rounded-[14px] transition-all border-2",
                 isSelected
