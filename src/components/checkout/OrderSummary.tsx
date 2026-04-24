@@ -6,30 +6,11 @@ import { cn } from "@/lib/utils";
 import { integralCF } from "@/styles/fonts";
 import { FaCheck } from "react-icons/fa";
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-/** Single source of truth for the card-payment discount (in euro cents). */
-export const CARD_DISCOUNT_CENTS = 500; // €5.00
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-export type Bundle = {
-  id: number;
-  name: string;
-  price: string;
-  priceInCents: number;
-  popular: boolean;
-};
-
-// Estos precios coinciden con la tabla `bundles` de Supabase (el pedido se valida en createOrder).
-// TODO: para carga 100% dinámica, obtener bundles desde Supabase en el Server Component padre
-//       y pasarlos como props. No se refactoriza aquí para no romper el flujo de checkout
-//       que depende de getStoredBundle() + localStorage con los IDs de estos bundles.
-export const BUNDLES: Bundle[] = [
-  { id: 1, name: "1 Bote",  price: "29,99€", priceInCents: 2999, popular: false },
-  { id: 2, name: "2 Botes", price: "44,99€", priceInCents: 4499, popular: true  },
-  { id: 3, name: "3 Botes", price: "59,99€", priceInCents: 5999, popular: false },
-];
+// Importamos desde el módulo compartido (los re-exports de tipo no están disponibles
+// en el scope del fichero — hay que importar explícitamente para usarlos aquí abajo).
+import { BUNDLES, CARD_DISCOUNT_CENTS, type Bundle } from "@/lib/bundles";
+export type { Bundle };
+export { BUNDLES, CARD_DISCOUNT_CENTS };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

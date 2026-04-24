@@ -217,31 +217,80 @@ function CheckoutForm({
     setSubmitting(true);
     setStripeError(null);
 
-    // TODO: create PaymentMethod + PaymentIntent and confirm payment
-    // const cardElement = elements.getElement(CardNumberElement)!;
-    // const { paymentMethod, error: pmError } = await stripe.createPaymentMethod({
-    //   type: "card",
-    //   card: cardElement,
-    //   billing_details: {
-    //     name: `${data.firstName} ${data.lastName}`,
-    //     email: data.email,
-    //     phone: data.phone,
-    //     address: { line1: data.address, city: data.city, state: data.province, postal_code: data.postcode, country: "ES" },
-    //   },
-    // });
-    // if (pmError) { setStripeError(pmError.message ?? "Error."); setSubmitting(false); return; }
-    //
-    // const res = await fetch("/api/create-payment-intent", {
-    //   method: "POST",
-    //   body: JSON.stringify({ bundleId: bundle.id, paymentMethodId: paymentMethod.id }),
-    // });
-    // const { clientSecret } = await res.json();
-    //
-    // const { error: confirmError } = await stripe.confirmCardPayment(clientSecret);
-    // if (confirmError) { setStripeError(confirmError.message); setSubmitting(false); return; }
+    // ── 1. Crear PaymentMethod con los datos de la tarjeta ──────────────────
+    const cardElement = elements.getElement(CardNumberElement)!;
+    const { paymentMethod, error: pmError } = await stripe.createPaymentMethod({
+      type: "card",
+      card: cardElement,
+      billing_details: {
+        name: `${data.firstName} ${data.lastName}`,
+        email: data.email,
+        phone: data.phone,
+        address: {
+          line1: data.address,
+          city: data.city,
+          state: data.province,
+          postal_code: data.postcode,
+          country: "ES",
+        },
+      },
+    });
 
-    // ── Demo: simulate successful payment ──
-    await new Promise((r) => setTimeout(r, 1500));
+    if (pmError) {
+      setStripeError(pmError.message ?? "Error al procesar la tarjeta.");
+      setSubmitting(false);
+      return;
+    }
+
+    // ── 2. Pedir al servidor que cree el PaymentIntent ──────────────────────
+    const intentRes = await fetch("/api/create-payment-intent", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ bundleId: bundle.id }),
+    });
+
+    const intentData = await intentRes.json();
+
+    if (!intentRes.ok || !intentData.clientSecret) {
+      setStripeError(intentData.error ?? "Error al iniciar el pago.");
+      setSubmitting(false);
+      return;
+    }
+
+    // ── 3. Confirmar el cobro con Stripe ────────────────────────────────────
+    const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(
+      intentData.clientSecret,
+      { payment_method: paymentMethod.id }
+    );
+
+    if (confirmError) {
+      setStripeError(confirmError.message ?? "El pago fue rechazado.");
+      setSubmitting(false);
+      return;
+    }
+
+    if (paymentIntent?.status !== "succeeded") {
+      setStripeError("El pago no pudo completarse. Inténtalo de nuevo.");
+      setSubmitting(false);
+      return;
+    }
+
+    // ── 4. Pago confirmado por Stripe → crear la orden en base de datos ─────
+    const { createOrderAction } = await import("@/app/actions/orders");
+    await createOrderAction({
+      customerData: {
+        fullName: `${data.firstName} ${data.lastName}`,
+        phone: data.phone,
+        address: data.address,
+        postalCode: data.postcode,
+        city: data.city,
+        province: data.province,
+      },
+      bundleId: bundle.id,
+      paymentMethod: "CARD",
+      stripePaymentIntentId: paymentIntent.id,
+    });
+
     setSubmitting(false);
     setSubmitted(true);
   };
