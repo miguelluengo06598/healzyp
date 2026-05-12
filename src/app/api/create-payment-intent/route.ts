@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { z } from "zod";
 import { BUNDLES, CARD_DISCOUNT_CENTS } from "@/lib/bundles";
-import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { paymentIntentRatelimit, getClientIp } from "@/lib/rate-limit";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2026-04-22.dahlia",
@@ -14,9 +14,9 @@ const BodySchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  // ── Rate limiting: 10 intentos por IP por hora ──────────────────────────────
+  // ── Rate limiting: 10 intentos por IP por hora (Upstash Redis) ──────────────
   const ip = getClientIp(req);
-  const { allowed, remaining, resetAt } = rateLimit(`payment:${ip}`, 10);
+  const { success: allowed, limit, reset, remaining } = await paymentIntentRatelimit.limit(ip);
 
   if (!allowed) {
     return NextResponse.json(
@@ -24,8 +24,8 @@ export async function POST(req: NextRequest) {
       {
         status: 429,
         headers: {
-          "Retry-After": String(Math.ceil((resetAt - Date.now()) / 1000)),
-          "X-RateLimit-Remaining": "0",
+          "Retry-After": String(Math.max(0, Math.ceil((reset - Date.now()) / 1000))),
+          "X-RateLimit-Remaining": String(remaining),
         },
       }
     );

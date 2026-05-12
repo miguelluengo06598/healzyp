@@ -15,6 +15,7 @@ import { stripePromise } from "@/lib/stripe";
 import { FaCheck, FaCheckCircle, FaLock } from "react-icons/fa";
 import { FaCircleXmark } from "react-icons/fa6";
 import PaymentIcons from "@/components/common/PaymentIcons";
+import { useMetaPixel } from "@/hooks/useMetaPixel";
 
 // Stripe imports — loaded client-side only
 import {
@@ -165,6 +166,7 @@ function CheckoutForm({
   const stripe = useStripe();
   const elements = useElements();
   const router = useRouter();
+  const { trackPurchase } = useMetaPixel();
 
   const [submitting, setSubmitting] = useState(false);
   const [stripeError, setStripeError] = useState<string | null>(null);
@@ -303,6 +305,28 @@ function CheckoutForm({
 
     setSubmitting(false);
     setSubmitted(true);
+
+    // ── 5. Meta Pixel: Purchase ─────────────────────────────────────────────
+    trackPurchase({
+      orderId: orderResult.orderId ?? paymentIntent.id,
+      orderNumber: orderResult.orderNumber ?? paymentIntent.id,
+      value: totalCents / 100,
+      currency: 'EUR',
+      items: [
+        {
+          id: bundle.id,
+          name: bundle.name,
+          quantity: 1,
+          price: bundle.priceInCents / 100,
+        },
+      ],
+      email: data.email,
+      phone: data.phone.replace(/[\s\-]/g, ''),
+      firstName: data.firstName,
+      lastName: data.lastName,
+      city: data.city,
+      zip: data.postcode,
+    });
   };
 
   // ── Success screen ──────────────────────────────────────────────────────────
@@ -696,10 +720,25 @@ function CheckoutForm({
 export default function CardCheckoutPage() {
   const router = useRouter();
   const [bundle, setBundle] = useState<Bundle | null>(null);
+  const { trackInitiateCheckout } = useMetaPixel();
 
   useEffect(() => {
-    setBundle(getStoredBundle());
-  }, []);
+    const b = getStoredBundle();
+    setBundle(b);
+    // Meta Pixel: InitiateCheckout al entrar en checkout
+    trackInitiateCheckout({
+      value: Math.max(0, b.priceInCents - CARD_DISCOUNT_CENTS) / 100,
+      currency: 'EUR',
+      items: [
+        {
+          id: b.id,
+          name: b.name,
+          quantity: 1,
+          price: b.priceInCents / 100,
+        },
+      ],
+    });
+  }, [trackInitiateCheckout]);
 
   if (!bundle) return null;
 

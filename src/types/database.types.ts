@@ -16,6 +16,9 @@ export type OrderStatus =
   | 'DELIVERED'
   | 'CANCELLED'
 
+export type CartAction = 'add' | 'remove' | 'update'
+export type DeviceType = 'mobile' | 'desktop' | 'tablet' | 'unknown'
+
 // ─── Row types (lo que devuelve Supabase en un SELECT) ───────────────────────
 
 export interface ProductRow {
@@ -120,6 +123,101 @@ export interface ReviewRow {
   updated_at: string
 }
 
+// ─── Tracking rows ───────────────────────────────────────────────────────────
+
+export interface TrackingSessionRow {
+  id: string                          // UUID
+  user_id: string | null
+  fingerprint: string | null
+  device_type: DeviceType
+  device_info: Record<string, unknown>
+  country: string | null
+  region: string | null
+  city: string | null
+  referrer: string | null
+  landing_page: string
+  utm_source: string | null
+  utm_medium: string | null
+  utm_campaign: string | null
+  utm_content: string | null
+  utm_term: string | null
+  consent_given: boolean
+  ended_at: string | null
+  duration_seconds: number
+  created_at: string
+}
+
+export interface TrackingPageViewRow {
+  id: string
+  session_id: string
+  url: string
+  path: string
+  title: string | null
+  duration_seconds: number
+  created_at: string
+}
+
+export interface TrackingProductViewRow {
+  id: string
+  session_id: string
+  product_id: number
+  product_slug: string
+  duration_seconds: number
+  created_at: string
+}
+
+export interface TrackingCartActionRow {
+  id: string
+  session_id: string
+  product_id: number
+  bundle_id: number | null
+  action: CartAction
+  quantity: number
+  unit_price: number | null
+  cart_total: number | null
+  created_at: string
+}
+
+export interface TrackingCheckoutRow {
+  id: string
+  session_id: string
+  step: string
+  cart_total: number | null
+  items_count: number | null
+  completed: boolean
+  created_at: string
+  completed_at: string | null
+}
+
+export interface TrackingConversionRow {
+  id: string
+  session_id: string
+  order_id: string | null
+  order_number: string | null
+  total_amount: number
+  items_count: number
+  payment_method: string | null
+  created_at: string
+}
+
+export interface TrackingAbandonmentRow {
+  id: string
+  session_id: string
+  reason: string
+  last_page: string
+  cart_value: number
+  items_in_cart: number
+  created_at: string
+}
+
+export interface TrackingEventRow {
+  id: string
+  session_id: string | null
+  event_type: string
+  payload: Record<string, unknown>
+  created_at: string
+}
+
 // ─── Insert types (lo que envías en un INSERT) ───────────────────────────────
 
 export type CustomerInsert = Omit<CustomerRow, 'id' | 'total_orders' | 'total_spent' | 'created_at' | 'updated_at'>
@@ -183,6 +281,47 @@ export interface Database {
         Insert: ContactMessageInsert
         Update: Partial<ContactMessageInsert>
       } & NoRelationships
+      // Tracking tables
+      tracking_sessions: {
+        Row: TrackingSessionRow
+        Insert: Omit<TrackingSessionRow, 'created_at'>
+        Update: Partial<Omit<TrackingSessionRow, 'id' | 'created_at'>>
+      } & NoRelationships
+      tracking_page_views: {
+        Row: TrackingPageViewRow
+        Insert: Omit<TrackingPageViewRow, 'id' | 'created_at'>
+        Update: Partial<Omit<TrackingPageViewRow, 'id' | 'created_at'>>
+      } & NoRelationships
+      tracking_product_views: {
+        Row: TrackingProductViewRow
+        Insert: Omit<TrackingProductViewRow, 'id' | 'created_at'>
+        Update: Partial<Omit<TrackingProductViewRow, 'id' | 'created_at'>>
+      } & NoRelationships
+      tracking_cart_actions: {
+        Row: TrackingCartActionRow
+        Insert: Omit<TrackingCartActionRow, 'id' | 'created_at'>
+        Update: Partial<Omit<TrackingCartActionRow, 'id' | 'created_at'>>
+      } & NoRelationships
+      tracking_checkouts: {
+        Row: TrackingCheckoutRow
+        Insert: Omit<TrackingCheckoutRow, 'id' | 'created_at' | 'completed_at'>
+        Update: Partial<Omit<TrackingCheckoutRow, 'id' | 'created_at'>>
+      } & NoRelationships
+      tracking_conversions: {
+        Row: TrackingConversionRow
+        Insert: Omit<TrackingConversionRow, 'id' | 'created_at'>
+        Update: Partial<Omit<TrackingConversionRow, 'id' | 'created_at'>>
+      } & NoRelationships
+      tracking_abandonments: {
+        Row: TrackingAbandonmentRow
+        Insert: Omit<TrackingAbandonmentRow, 'id' | 'created_at'>
+        Update: Partial<Omit<TrackingAbandonmentRow, 'id' | 'created_at'>>
+      } & NoRelationships
+      tracking_events: {
+        Row: TrackingEventRow
+        Insert: Omit<TrackingEventRow, 'id' | 'created_at'>
+        Update: Partial<Omit<TrackingEventRow, 'id' | 'created_at'>>
+      } & NoRelationships
     }
     Views: Record<string, never>
     Functions: {
@@ -195,6 +334,8 @@ export interface Database {
       payment_method_enum: PaymentMethod
       payment_status_enum: PaymentStatus
       order_status_enum: OrderStatus
+      cart_action_enum: CartAction
+      device_type_enum: DeviceType
     }
     CompositeTypes: Record<string, never>
   }

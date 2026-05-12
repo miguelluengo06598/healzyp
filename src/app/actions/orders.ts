@@ -3,6 +3,8 @@
 import { z } from 'zod'
 import { createOrder } from '@/lib/db/orders'
 import type { CreateOrderResult } from '@/lib/db/orders'
+import { verifyHCaptcha } from '@/lib/hcaptcha'
+import { orderIpRatelimit, orderPhoneRatelimit, getClientIpFromHeaders } from '@/lib/rate-limit'
 
 const SPANISH_PHONE = /^(\+34|0034|34)?[6789]\d{8}$/
 const POSTCODE_ES   = /^\d{5}$/
@@ -22,17 +24,39 @@ const CreateOrderSchema = z.object({
   bundleId:               z.number().int().min(1).max(3),
   paymentMethod:          z.enum(['CARD', 'COD']),
   stripePaymentIntentId:  z.string().startsWith('pi_').optional(),
-  stripeClientSecret:     z.string().optional(),
   customerNotes:          z.string().max(500).optional(),
+  hcaptchaToken:          z.string().min(1, 'Verificación de seguridad requerida.'),
 })
 
 export async function createOrderAction(
   input: unknown
 ): Promise<CreateOrderResult> {
+  // Rate limit por IP: 5 pedidos/hora
+  const ip = await getClientIpFromHeaders()
+  const { success: ipAllowed } = await orderIpRatelimit.limit(ip)
+  if (!ipAllowed) {
+    return { success: false, error: 'Demasiados intentos desde esta red. Inténtalo más tarde.' }
+  }
+
   const parsed = CreateOrderSchema.safeParse(input)
   if (!parsed.success) {
     const first = parsed.error.issues[0]
     return { success: false, error: first?.message ?? 'Datos de pedido inválidos.' }
+  }
+
+  // Rate limit por teléfono: 3 pedidos/hora (mitiga spam de COD)
+  const phone = parsed.data.customerData.phone
+  const { success: phoneAllowed } = await orderPhoneRatelimit.limit(phone)
+  if (!phoneAllowed) {
+    return { success: false, error: 'Demasiados pedidos con este teléfono. Inténtalo más tarde.' }
+  }
+
+  // Verificación hCaptcha (anti-bot)
+  if (process.env.HCAPTCHA_SECRET_KEY) {
+    const captchaOk = await verifyHCaptcha(parsed.data.hcaptchaToken)
+    if (!captchaOk) {
+      return { success: false, error: 'Verificación de seguridad fallida. Inténtalo de nuevo.' }
+    }
   }
 
   return createOrder(parsed.data)

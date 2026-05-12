@@ -7,9 +7,6 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2026-04-22.dahlia",
 });
 
-// Next.js necesita el body crudo (sin parsear) para verificar la firma de Stripe.
-export const config = { api: { bodyParser: false } };
-
 export async function POST(req: NextRequest) {
   const sig = req.headers.get("stripe-signature");
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;

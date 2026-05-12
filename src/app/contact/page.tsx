@@ -7,6 +7,7 @@ import { integralCF } from "@/styles/fonts";
 import { FaCheckCircle } from "react-icons/fa";
 import { FaCircleXmark } from "react-icons/fa6";
 import { submitContactAction } from "@/app/actions/contact";
+import HCaptchaWidget from "@/components/ui/HCaptcha";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -64,6 +65,7 @@ export default function ContactPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [hcaptchaToken, setHCaptchaToken] = useState<string | null>(null);
 
   const {
     register,
@@ -75,10 +77,14 @@ export default function ContactPage() {
   const watched = watch();
 
   const onSubmit = async (data: FormValues) => {
+    if (!hcaptchaToken && process.env.NEXT_PUBLIC_HCAPTCHA_DISABLED !== "true") {
+      setSubmitError("Por favor, completa la verificación de seguridad.");
+      return;
+    }
     setSubmitting(true);
     setSubmitError(null);
     try {
-      const result = await submitContactAction(data);
+      const result = await submitContactAction({ ...data, hcaptchaToken: hcaptchaToken ?? "" });
       if (!result.success) {
         setSubmitError(result.error ?? "Error desconocido.");
       } else {
@@ -213,6 +219,12 @@ export default function ContactPage() {
               />
             </InputWrapper>
 
+            {/* hCaptcha anti-bot */}
+            <HCaptchaWidget
+              onVerify={setHCaptchaToken}
+              onLoadError={() => setHCaptchaToken(null)}
+            />
+
             {/* Server error */}
             {submitError && (
               <div className="bg-red-50 border border-red-200 rounded-[16px] p-4 text-sm text-red-700">
@@ -223,10 +235,14 @@ export default function ContactPage() {
             {/* Submit */}
             <button
               type="submit"
-              disabled={submitting}
+              disabled={
+                submitting ||
+                (!hcaptchaToken && process.env.NEXT_PUBLIC_HCAPTCHA_DISABLED !== "true")
+              }
               className={cn(
                 "w-full rounded-full h-[52px] text-base font-bold text-white transition-all",
-                submitting
+                submitting ||
+                  (!hcaptchaToken && process.env.NEXT_PUBLIC_HCAPTCHA_DISABLED !== "true")
                   ? "bg-[#487D26]/60 cursor-not-allowed"
                   : "bg-[#487D26] hover:bg-[#3a6620]"
               )}

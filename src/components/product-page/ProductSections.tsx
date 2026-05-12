@@ -2,6 +2,7 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { integralCF } from "@/styles/fonts";
 import CustomerReviews from "./CustomerReviews";
+import ProductSectionWrapper from "@/components/tracking/ProductSectionWrapper";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ProductSections
@@ -93,6 +94,7 @@ export default function ProductSections() {
       {/* ═══════════════════════════════════════════════════════════════════════
           SECCIÓN 1 — BENEFICIOS
       ════════════════════════════════════════════════════════════════════════ */}
+      <ProductSectionWrapper section="beneficios">
       <section className="max-w-frame mx-auto px-4 xl:px-0 mb-[50px] sm:mb-20">
         <hr className="h-[1px] border-t-black/10 mb-10 sm:mb-16" />
 
@@ -130,10 +132,12 @@ export default function ProductSections() {
           ))}
         </div>
       </section>
+      </ProductSectionWrapper>
 
       {/* ═══════════════════════════════════════════════════════════════════════
           SECCIÓN 2 — 3 PASOS PARA MEJORAR TU SALUD
       ════════════════════════════════════════════════════════════════════════ */}
+      <ProductSectionWrapper section="descripcion">
       <section className="max-w-frame mx-auto px-4 xl:px-0 mb-[50px] sm:mb-20">
         <hr className="h-[1px] border-t-black/10 mb-10 sm:mb-16" />
 
@@ -169,10 +173,12 @@ export default function ProductSections() {
           ))}
         </div>
       </section>
+      </ProductSectionWrapper>
 
       {/* ═══════════════════════════════════════════════════════════════════════
           SECCIÓN 3 — BLOQUES IMAGEN/TEXTO ALTERNADOS
       ════════════════════════════════════════════════════════════════════════ */}
+      <ProductSectionWrapper section="ingredientes">
       <section className="max-w-frame mx-auto px-4 xl:px-0 mb-[50px] sm:mb-20">
         <hr className="h-[1px] border-t-black/10 mb-10 sm:mb-16" />
 
@@ -232,11 +238,14 @@ export default function ProductSections() {
           ))}
         </div>
       </section>
+      </ProductSectionWrapper>
 
       {/* ═══════════════════════════════════════════════════════════════════════
           SECCIÓN 4 — RESEÑAS VERIFICADAS DE CLIENTES
       ════════════════════════════════════════════════════════════════════════ */}
-      <CustomerReviews />
+      <ProductSectionWrapper section="testimonios">
+        <CustomerReviews />
+      </ProductSectionWrapper>
     </>
   );
 }

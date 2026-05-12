@@ -29,7 +29,6 @@ export interface CreateOrderInput {
   bundleId: number
   paymentMethod: PaymentMethod
   stripePaymentIntentId?: string
-  stripeClientSecret?: string
   customerNotes?: string
 }
 
@@ -156,7 +155,6 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
       payment_status:            'PENDING',
       paid_at:                   null,
       stripe_payment_intent_id:  input.stripePaymentIntentId ?? null,
-      stripe_client_secret:      input.stripeClientSecret ?? null,
       status:                    'PENDING',
       customer_notes:            input.customerNotes ?? null,
       admin_notes:               null,

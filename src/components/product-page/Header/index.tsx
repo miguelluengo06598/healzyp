@@ -7,6 +7,7 @@ import Rating from "@/components/ui/Rating";
 import { FaCheck } from "react-icons/fa";
 // Cambio: ColorSelection y SizeSelection reemplazados por BundleSelection
 import BundleSelection from "./BundleSelection";
+import DeliveryTimeline from "./DeliveryTimeline";
 import AddToCardSection from "./AddToCardSection";
 
 const BENEFIT_BUBBLES = [
@@ -63,6 +64,9 @@ const Header = ({ data }: { data: Product }) => {
           <hr className="h-[1px] border-t-black/10 mb-5" />
           {/* Cambio: sección de bundles en lugar de color + talla */}
           <BundleSelection />
+          <div className="mt-4">
+            <DeliveryTimeline />
+          </div>
           <hr className="hidden md:block h-[1px] border-t-black/10 my-5" />
           <AddToCardSection data={data} />
         </div>
