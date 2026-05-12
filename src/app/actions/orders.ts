@@ -3,7 +3,6 @@
 import { z } from 'zod'
 import { createOrder } from '@/lib/db/orders'
 import type { CreateOrderResult } from '@/lib/db/orders'
-import { verifyHCaptcha } from '@/lib/hcaptcha'
 import { orderIpRatelimit, orderPhoneRatelimit, getClientIpFromHeaders } from '@/lib/rate-limit'
 
 const SPANISH_PHONE = /^(\+34|0034|34)?[6789]\d{8}$/
@@ -25,7 +24,6 @@ const CreateOrderSchema = z.object({
   paymentMethod:          z.enum(['CARD', 'COD']),
   stripePaymentIntentId:  z.string().startsWith('pi_').optional(),
   customerNotes:          z.string().max(500).optional(),
-  hcaptchaToken:          z.string().min(1, 'Verificación de seguridad requerida.'),
 })
 
 export async function createOrderAction(
@@ -49,14 +47,6 @@ export async function createOrderAction(
   const { success: phoneAllowed } = await orderPhoneRatelimit.limit(phone)
   if (!phoneAllowed) {
     return { success: false, error: 'Demasiados pedidos con este teléfono. Inténtalo más tarde.' }
-  }
-
-  // Verificación hCaptcha (anti-bot)
-  if (process.env.HCAPTCHA_SECRET_KEY) {
-    const captchaOk = await verifyHCaptcha(parsed.data.hcaptchaToken)
-    if (!captchaOk) {
-      return { success: false, error: 'Verificación de seguridad fallida. Inténtalo de nuevo.' }
-    }
   }
 
   return createOrder(parsed.data)

@@ -2,14 +2,12 @@
 
 import { z } from 'zod'
 import { createServiceClient } from '@/lib/supabase'
-import { verifyHCaptcha } from '@/lib/hcaptcha'
 import { contactRatelimit, getClientIpFromHeaders } from '@/lib/rate-limit'
 
 const ContactSchema = z.object({
   name:            z.string().min(2, 'Nombre muy corto').max(100, 'Nombre demasiado largo').trim(),
   email:           z.string().email('Email no válido').max(254).trim().toLowerCase(),
   message:         z.string().min(10, 'Mensaje muy corto').max(2000, 'Mensaje demasiado largo').trim(),
-  hcaptchaToken:   z.string().min(1, 'Verificación de seguridad requerida.'),
 })
 
 export interface ContactResult {
@@ -34,15 +32,7 @@ export async function submitContactAction(
     return { success: false, error: first?.message ?? 'Datos inválidos.' }
   }
 
-  const { name, email, message, hcaptchaToken } = parsed.data
-
-  // Verificación hCaptcha (anti-bot)
-  if (process.env.HCAPTCHA_SECRET_KEY) {
-    const captchaOk = await verifyHCaptcha(hcaptchaToken)
-    if (!captchaOk) {
-      return { success: false, error: 'Verificación de seguridad fallida. Inténtalo de nuevo.' }
-    }
-  }
+  const { name, email, message } = parsed.data
 
   let db: ReturnType<typeof createServiceClient>
   try {

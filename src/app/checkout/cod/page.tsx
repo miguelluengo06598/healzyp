@@ -11,7 +11,6 @@ import OrderSummary, {
 } from "@/components/checkout/OrderSummary";
 import SecurityBadges from "@/components/checkout/SecurityBadges";
 import { createOrderAction } from "@/app/actions/orders";
-import HCaptchaWidget from "@/components/ui/HCaptcha";
 import Link from "next/link";
 import { FaCheckCircle } from "react-icons/fa";
 import { FaCircleXmark } from "react-icons/fa6";
@@ -82,7 +81,6 @@ export default function CodCheckoutPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [orderError, setOrderError] = useState<string | null>(null);
-  const [hcaptchaToken, setHCaptchaToken] = useState<string | null>(null);
   const { trackPurchase } = useMetaPixel();
 
   useEffect(() => {
@@ -115,11 +113,6 @@ export default function CodCheckoutPage() {
     if (data._hp) return; // honeypot
     if (!bundle) return;
 
-    if (!hcaptchaToken && process.env.NEXT_PUBLIC_HCAPTCHA_DISABLED !== "true") {
-      setOrderError("Por favor, completa la verificación de seguridad.");
-      return;
-    }
-
     setSubmitting(true);
     setOrderError(null);
 
@@ -136,7 +129,6 @@ export default function CodCheckoutPage() {
         },
         bundleId:      bundle.id,
         paymentMethod: 'COD',
-        hcaptchaToken: hcaptchaToken ?? "",
       });
 
       if (!result.success) {
@@ -477,12 +469,6 @@ export default function CodCheckoutPage() {
               </div>
             </div>
 
-            {/* hCaptcha anti-bot */}
-            <HCaptchaWidget
-              onVerify={setHCaptchaToken}
-              onLoadError={() => setHCaptchaToken(null)}
-            />
-
             {/* Order error */}
             {orderError && (
               <div className="bg-red-50 border border-red-200 rounded-[16px] p-4 text-sm text-red-700">
@@ -494,14 +480,10 @@ export default function CodCheckoutPage() {
             {/* Submit */}
             <button
               type="submit"
-              disabled={
-                submitting ||
-                (!hcaptchaToken && process.env.NEXT_PUBLIC_HCAPTCHA_DISABLED !== "true")
-              }
+              disabled={submitting}
               className={cn(
                 "w-full rounded-full h-[52px] text-base font-bold text-white transition-all",
-                submitting ||
-                  (!hcaptchaToken && process.env.NEXT_PUBLIC_HCAPTCHA_DISABLED !== "true")
+                submitting
                   ? "bg-[#487D26]/60 cursor-not-allowed"
                   : "bg-[#487D26] hover:bg-[#3a6620]"
               )}
