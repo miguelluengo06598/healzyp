@@ -5,7 +5,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { createServiceClient, supabase } from '@/lib/supabase'
-import { sendTelegramNotification } from '@/lib/telegram'
+import { sendOrderNotification } from '@/lib/notifications'
 import type {
   BundleRow,
   OrderRow,
@@ -191,10 +191,10 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
     console.error('[createOrder] Error al insertar order_item:', itemError)
   }
 
-  // ── 6. Notificación Telegram (solo COD; CARD se notifica desde el webhook) ─
+  // ── 6. Notificación ntfy (solo COD; CARD se notifica desde el webhook) ─
   if (input.paymentMethod === 'COD') {
     // Fire-and-forget — no awaited para no bloquear la respuesta al cliente
-    sendTelegramNotification('NEW_ORDER_COD', {
+    sendOrderNotification({
       orderNumber:   orderNumber as string,
       customerName:  input.customerData.fullName,
       customerPhone: input.customerData.phone,
@@ -204,7 +204,9 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
       province:      input.customerData.province,
       bundleName:    bundle.name,
       totalEuros:    Number(bundle.price),
-    }).catch((e) => console.error('[createOrder] telegram COD error:', e))
+      paymentMethod: 'COD',
+      status:        'new',
+    }).catch((e) => console.error('[createOrder] ntfy COD error:', e))
   }
 
   return { success: true, orderNumber: orderNumber as string, orderId }

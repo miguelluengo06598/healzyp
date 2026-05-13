@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { updateOrderPaymentStatus, getOrderByStripePaymentIntentId } from "@/lib/db/orders";
-import { sendTelegramNotification } from "@/lib/telegram";
+import { sendOrderNotification } from "@/lib/notifications";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2026-04-22.dahlia",
@@ -36,20 +36,22 @@ export async function POST(req: NextRequest) {
         await updateOrderPaymentStatus(pi.id, "PAID");
         console.log("[stripe-webhook] Pago confirmado:", pi.id);
 
-        // Notificación Telegram — buscamos la orden completa para incluir los datos del cliente
+        // Notificación ntfy — buscamos la orden completa para incluir los datos del cliente
         const order = await getOrderByStripePaymentIntentId(pi.id);
         const firstItem = order?.order_items?.[0];
-        sendTelegramNotification("PAYMENT_CONFIRMED", {
-          orderNumber:      order?.order_number,
-          customerName:     order?.shipping_name,
+        sendOrderNotification({
+          orderNumber:      order?.order_number ?? pi.id,
+          customerName:     order?.shipping_name ?? 'Desconocido',
           customerPhone:    order?.shipping_phone,
           address:          order?.shipping_address,
           city:             order?.shipping_city,
           province:         order?.shipping_province,
-          bundleName:       firstItem?.bundle_name ?? pi.metadata?.bundleName,
+          bundleName:       firstItem?.bundle_name ?? pi.metadata?.bundleName ?? undefined,
           totalEuros:       order ? Number(order.total) : pi.amount / 100,
+          paymentMethod:    'CARD',
+          status:           'confirmed',
           paymentIntentId:  pi.id,
-        }).catch((e) => console.error("[stripe-webhook] telegram CONFIRMED error:", e));
+        }).catch((e) => console.error("[stripe-webhook] ntfy CONFIRMED error:", e));
         break;
       }
 
@@ -64,14 +66,16 @@ export async function POST(req: NextRequest) {
           pi.last_payment_error?.message ??
           pi.last_payment_error?.code ??
           "Motivo desconocido";
-        sendTelegramNotification("PAYMENT_FAILED", {
-          orderNumber:     order?.order_number,
-          customerName:    order?.shipping_name,
-          bundleName:      order?.order_items?.[0]?.bundle_name ?? pi.metadata?.bundleName,
+        sendOrderNotification({
+          orderNumber:     order?.order_number ?? pi.id,
+          customerName:    order?.shipping_name ?? 'Desconocido',
+          bundleName:      order?.order_items?.[0]?.bundle_name ?? pi.metadata?.bundleName ?? undefined,
           totalEuros:      order ? Number(order.total) : pi.amount / 100,
+          paymentMethod:   'CARD',
+          status:          'failed',
           paymentIntentId: pi.id,
           failureReason,
-        }).catch((e) => console.error("[stripe-webhook] telegram FAILED error:", e));
+        }).catch((e) => console.error("[stripe-webhook] ntfy FAILED error:", e));
         break;
       }
 
